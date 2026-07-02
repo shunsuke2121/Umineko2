@@ -259,9 +259,6 @@
     <div class="gate-switch" id="authSwitch">
       はじめての方は <a id="toRegister">アカウント登録</a>
     </div>
-    <div class="gate-help">
-      <a class="btn-quiet" id="reconfig" style="display:inline-block;text-decoration:none">接続設定をやり直す</a>
-    </div>
   </div>
 </div>
 
@@ -406,9 +403,9 @@
   const RATE = 20;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
 
-  /* ───── 上級者向け: ここに直接書けば設定画面を省略できます ───── */
-  const HARD_URL = "";
-  const HARD_KEY = "";
+  /* ───── 共有バックエンド: 全員が同じSupabaseに接続します。設定画面はスキップされます ───── */
+  const HARD_URL = "https://gviyitlttafiucaihpqp.supabase.co";
+  const HARD_KEY = "sb_publishable_vAgyLm0Lwbr8oDRQkaHGNg_cmzLoMy9";
 
   let sb = null;          // supabase client
   let user = null;        // 認証ユーザー
@@ -524,11 +521,6 @@
     clearMsg("cfgMsg"); boot();
   });
   $("cfgLocal").addEventListener("click", startLocal);
-  $("reconfig").addEventListener("click", () => {
-    localStorage.removeItem(CFG_URL); localStorage.removeItem(CFG_KEY);
-    if (sb) { try { sb.auth.signOut(); } catch {} }
-    sb = null; user = null; show("setupGate");
-  });
 
   function startLocal(){
     store = Local; user = null; sb = null;
