@@ -153,11 +153,18 @@
   .quick-nav {
     position:sticky; top:0; z-index:72;
     margin:-2px 0 24px; padding:10px 12px;
-    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
     background:rgba(23,16,21,.88); border:1px solid var(--edge);
     box-shadow:0 16px 42px -30px #000; backdrop-filter:blur(10px);
   }
-  .quick-nav-label { font-family:var(--cinzel); font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-right:4px; }
+  .quick-nav-head { display:none; align-items:center; justify-content:space-between; gap:12px; }
+  .quick-nav-body { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }
+  .quick-nav-label { font-family:var(--cinzel); font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); }
+  .quick-nav-label-desktop { margin-right:4px; }
+  .quick-nav-toggle {
+    min-height:34px; padding:7px 12px; background:rgba(13,10,13,.36); border:1px solid var(--edge);
+    color:var(--bone); font-family:var(--jp); font-size:12.5px; letter-spacing:.06em;
+  }
+  .quick-nav-toggle:hover, .quick-nav-toggle:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); }
   .quick-nav a {
     min-height:34px; padding:7px 13px; display:inline-flex; align-items:center; justify-content:center;
     border:1px solid var(--edge); color:var(--ash); text-decoration:none;
@@ -167,18 +174,16 @@
   .quick-nav a:hover, .quick-nav a:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); background:rgba(184,147,74,.10); }
   #summary, #rangeControl, #calendar, #charts, #register { scroll-margin-top:86px; }
 
-  /* 目次が端末幅で切れないように、狭い幅では横スクロールではなく折り返して全項目を表示する */
   @media (max-width:760px){
-    .quick-nav {
+    .quick-nav { padding:10px; }
+    .quick-nav-body {
       display:grid;
       grid-template-columns:repeat(3, minmax(0, 1fr));
       gap:7px;
       justify-content:stretch;
       align-items:stretch;
-      overflow:visible;
-      padding:10px 12px;
     }
-    .quick-nav-label {
+    .quick-nav-label-desktop {
       grid-column:1 / -1;
       margin:0 0 2px;
       text-align:center;
@@ -193,8 +198,30 @@
       white-space:nowrap;
     }
   }
+  @media (max-width:560px){
+    .quick-nav {
+      padding:9px 10px;
+      margin:-2px 0 18px;
+    }
+    .quick-nav-head { display:flex; }
+    .quick-nav-label-mobile { margin-right:auto; }
+    .quick-nav-label-desktop { display:none; }
+    .quick-nav-body {
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      margin-top:8px;
+    }
+    .quick-nav.mobile-collapsed .quick-nav-body { display:none; }
+    .quick-nav a {
+      min-height:36px;
+      padding:8px 4px;
+      font-size:11.5px;
+    }
+    #summary, #rangeControl, #calendar, #charts, #register { scroll-margin-top:74px; }
+  }
   @media (max-width:380px){
-    .quick-nav { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .quick-nav-head { gap:8px; }
+    .quick-nav-toggle { min-height:32px; padding:6px 10px; font-size:12px; }
+    .quick-nav a { font-size:11px; }
   }
 
   /* 折りたたみ可能な章 */
@@ -489,10 +516,7 @@
       margin:0 -15px 18px;
       border-left:none;
       border-right:none;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
     }
-    .quick-nav a { flex:auto; }
-    .quick-nav-label { flex:auto; }
     .section-head { align-items:flex-start; flex-direction:column; gap:10px; }
     .section-head-tools { width:100%; justify-content:space-between; }
     .filter-panel { display:block; padding:14px; }
@@ -527,7 +551,8 @@
       border-radius:16px 16px 0 0; border-bottom:none; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); }
     .entry-dialog[open] { animation:sheetUp .32s cubic-bezier(.2,.7,.3,1); }
     @keyframes sheetUp { from { opacity:.5; transform:translateY(100%); } to { opacity:1; transform:none; } }
-    .fab { right:calc(16px + env(safe-area-inset-right)); bottom:calc(16px + env(safe-area-inset-bottom)); }
+    .fab { right:calc(14px + env(safe-area-inset-right)); bottom:calc(14px + env(safe-area-inset-bottom)); min-height:48px; padding:0 18px 0 16px; font-size:14px; }
+    .fab .glyph { font-size:20px; }
     tbody td.row-actions { justify-content:flex-end; gap:10px; padding:11px 15px 13px; }
     tbody td.row-actions::before { content:none; }
     /* 指で押しやすい大きさに（Apple/Google推奨の44px級） */
@@ -536,7 +561,7 @@
     .cal-legend { font-size:12.5px; gap:12px; }
   }
   @media (max-width:380px){
-    .quick-nav { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .quick-nav { margin:0 -15px 16px; }
   }
 
 </style>
@@ -626,13 +651,19 @@
     <div class="rule"><span class="lozenge"></span></div>
   </header>
 
-  <nav class="quick-nav reveal" aria-label="ページ内目次">
-    <span class="quick-nav-label">Menu</span>
-    <a href="#summary">総差枚</a>
-    <a href="#rangeControl">表示範囲</a>
-    <a href="#calendar">暦</a>
-    <a href="#charts">推移</a>
-    <a href="#register">台帳</a>
+  <nav class="quick-nav reveal mobile-collapsed" id="quickNav" aria-label="ページ内目次">
+    <div class="quick-nav-head">
+      <span class="quick-nav-label quick-nav-label-mobile">Menu</span>
+      <button type="button" class="quick-nav-toggle" id="quickNavToggle" aria-expanded="false" aria-controls="quickNavBody">目次を開く</button>
+    </div>
+    <div class="quick-nav-body" id="quickNavBody">
+      <span class="quick-nav-label quick-nav-label-desktop">Menu</span>
+      <a href="#summary">総差枚</a>
+      <a href="#rangeControl">表示範囲</a>
+      <a href="#calendar">暦</a>
+      <a href="#charts">推移</a>
+      <a href="#register">台帳</a>
+    </div>
   </nav>
 
   <!-- 総差枚 = 赤き真実 -->
@@ -842,6 +873,25 @@
   function showLoading(msg){ if (msg) $("loadingMsg").textContent = msg; $("loading").hidden = false; }
   function hideLoading(){ $("loading").hidden = true; }
 
+  const mobileQuickNavMQ = window.matchMedia("(max-width:560px)");
+  function syncQuickNav(initial = false){
+    const nav = $("quickNav"), btn = $("quickNavToggle");
+    if (!nav || !btn) return;
+    if (mobileQuickNavMQ.matches) {
+      if (initial && !nav.dataset.mobileInit) {
+        nav.classList.add("mobile-collapsed");
+        nav.dataset.mobileInit = "1";
+      }
+      const expanded = !nav.classList.contains("mobile-collapsed");
+      btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+      btn.textContent = expanded ? "目次を閉じる" : "目次を開く";
+    } else {
+      nav.classList.remove("mobile-collapsed");
+      btn.setAttribute("aria-expanded", "true");
+      btn.textContent = "目次";
+    }
+  }
+
   function sortedRecords(){ return [...records].sort((a,b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))); }
   function normalizeRange(){ if (dateFrom && dateTo && dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom]; }
   function inRange(r){ normalizeRange(); return (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo); }
@@ -979,6 +1029,22 @@
     clearTimeout(playReveal._t);
     playReveal._t = setTimeout(() => app.classList.add("revealed"), 1100);
   }
+
+  const quickNav = $("quickNav");
+  $("quickNavToggle")?.addEventListener("click", () => {
+    if (!quickNav) return;
+    quickNav.classList.toggle("mobile-collapsed");
+    syncQuickNav();
+  });
+  quickNav?.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener("click", () => {
+      if (!mobileQuickNavMQ.matches) return;
+      quickNav.classList.add("mobile-collapsed");
+      syncQuickNav();
+    });
+  });
+  if (mobileQuickNavMQ.addEventListener) mobileQuickNavMQ.addEventListener("change", () => syncQuickNav());
+  else if (mobileQuickNavMQ.addListener) mobileQuickNavMQ.addListener(() => syncQuickNav());
 
   function boot(){
     if (!window.supabase) { startLocal(); return; }
@@ -1432,6 +1498,7 @@
   function renderAll(){ updateRangeUI(); updateSortUI(); setRegisterCollapsed(registerCollapsed); renderSummary(); renderCalendar(); renderTable(); renderChart(); firstPaint=false; }
 
   setAuthMode("login");
+  syncQuickNav(true);
   boot();
 })();
 </script>
