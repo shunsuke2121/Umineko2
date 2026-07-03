@@ -1,0 +1,3 @@
+- [Streaming setup & Note articles](streaming-setup-note-articles.md) — user builds a JP streaming rig (棒読みちゃん/VOICEVOX/HCG/OBS) and sells fix writeups on Note; give detailed reproducible articles
+- [Network topology (Rocket League lag)](network-topology-rocketleague.md) — home net is double-NAT'd on au/KDDI fiber; ping is fine (24ms), lag likely NAT/background-app/streaming load
+- [AI video channel project](ai-video-channel-project.md) — Zen型 顔出しなしAIイラスト動画チャンネル＋自動生成パイプライン(C:\aaa)。動画方向に全振り、自走OK、Higgsfield nano_banana_2で画像生成

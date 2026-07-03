@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "short_04: 画像6枚生成→レンダリング→公開",
+  "description": "batch1.jsonの4番目「午後の眠気は15分で消えるのだ」。Gemini Webでs04_1〜s04_6を生成、build_scene_shorts.ps1でレンダリング、YouTube Studioへアップロード・公開。",
+  "activeForm": "short_04の画像生成中",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}
