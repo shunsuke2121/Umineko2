@@ -18,7 +18,7 @@
     --gold:#b8934a; --gold-lit:#ecca79; --gold-deep:#8a6a2f;
     --truth:#d8202c; --truth-lit:#ff3b46;
     --blue:#5f95d8;
-    --bone:#ece2d1; --ash:#9d8f88; --ash-dim:#6f6560;
+    --bone:#ece2d1; --ash:#9d8f88; --ash-dim:#8a7f76; /* ash-dim: WCAG AA 4.5:1↑（旧#6f6560は3.3:1で不足） */
     --cinzel:"Cinzel", serif;
     --serif:"Cormorant Garamond", serif;
     --jp:"Shippori Mincho","Yu Mincho",serif;
@@ -139,11 +139,11 @@
   .cal-title { font-family:var(--serif); font-size:23px; font-weight:600; color:var(--bone); }
   .cal-title .fig { font-size:23px; color:var(--gold-lit); }
   .cal-nav { display:flex; gap:6px; }
-  .cal-nav button { min-height:38px; padding:6px 12px; background:transparent; border:1px solid var(--edge); color:var(--ash); font-family:var(--mono); font-size:12px; }
+  .cal-nav button { min-height:38px; min-width:44px; padding:6px 14px; background:transparent; border:1px solid var(--edge); color:var(--ash); font-family:var(--mono); font-size:12px; }
   .cal-nav button:hover { border-color:var(--gold-deep); color:var(--gold-lit); }
   .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); border:1px solid var(--edge); border-bottom:none; background:var(--panel); }
   .cal-dow { text-align:center; font-family:var(--cinzel); font-size:10px; letter-spacing:.1em; color:var(--ash); padding:9px 0; border-bottom:1px solid var(--edge); background:var(--panel-2); }
-  .cal-dow.sun { color:var(--truth); } .cal-dow.sat { color:var(--blue); }
+  .cal-dow.sun { color:var(--truth-lit); } .cal-dow.sat { color:var(--blue); }
   .cal-cell { min-height:60px; border-bottom:1px solid var(--edge-soft); border-right:1px solid var(--edge-soft); padding:5px 6px 6px; position:relative; cursor:pointer; transition:background .15s; display:flex; flex-direction:column; }
   .cal-cell:nth-child(7n) { border-right:none; }
   .cal-cell.blank { cursor:default; background:rgba(0,0,0,.15); }
