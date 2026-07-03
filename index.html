@@ -28,7 +28,7 @@
     --mono:"DM Mono","SFMono-Regular",monospace;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  html { -webkit-text-size-adjust:100%; }
+  html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; scroll-padding-top:86px; }
   body {
     background:var(--void);
     background-image:
@@ -148,6 +148,35 @@
   .chap .en { margin-left:auto; font-family:var(--cinzel); font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--ash-dim); }
   .section { margin-bottom:52px; }
 
+
+  /* 目次・ページ内移動 */
+  .quick-nav {
+    position:sticky; top:0; z-index:72;
+    margin:-2px 0 24px; padding:10px 12px;
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+    background:rgba(23,16,21,.88); border:1px solid var(--edge);
+    box-shadow:0 16px 42px -30px #000; backdrop-filter:blur(10px);
+  }
+  .quick-nav-label { font-family:var(--cinzel); font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-right:4px; }
+  .quick-nav a {
+    min-height:34px; padding:7px 13px; display:inline-flex; align-items:center; justify-content:center;
+    border:1px solid var(--edge); color:var(--ash); text-decoration:none;
+    font-size:12.5px; letter-spacing:.06em; background:rgba(13,10,13,.36);
+    transition:background .18s,color .18s,border-color .18s;
+  }
+  .quick-nav a:hover, .quick-nav a:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); background:rgba(184,147,74,.10); }
+
+  /* 折りたたみ可能な章 */
+  .section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 20px; }
+  .section-head .chap { margin:0; flex:1 1 auto; min-width:0; }
+  .section-head-tools { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+  .register-count { min-height:34px; padding:7px 12px; display:inline-flex; align-items:center; border:1px solid var(--edge); background:var(--panel); }
+  .collapse-toggle { display:inline-flex; align-items:center; gap:7px; min-height:36px; }
+  .collapse-toggle .caret { display:inline-block; transition:transform .18s ease; font-family:var(--mono); }
+  .register-section.collapsed .register-content { display:none; }
+  .register-section.collapsed .collapse-toggle .caret { transform:rotate(-90deg); }
+  .table-note { font-family:var(--serif); font-style:italic; font-size:13.5px; color:var(--ash); }
+
   /* カレンダー */
   .cal-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
   .cal-title { font-family:var(--serif); font-size:23px; font-weight:600; color:var(--bone); }
@@ -263,6 +292,32 @@
   .chart-frame { border:1px solid var(--edge); background:var(--panel); padding:16px 12px 8px; }
   .chart-wrap { position:relative; height:300px; }
 
+  /* 表示範囲・並び替え */
+  .filter-panel {
+    margin:0 0 18px; padding:15px 16px; border:1px solid var(--edge); background:var(--panel);
+    display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px 18px; align-items:center;
+  }
+  .filter-title { font-family:var(--jp); font-weight:700; font-size:14px; letter-spacing:.08em; color:var(--gold-lit); }
+  .range-presets, .range-custom, .table-tools { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .range-presets button { min-height:36px; padding:7px 13px; background:transparent; border:1px solid var(--edge); color:var(--ash); font-size:12px; letter-spacing:.05em; }
+  .range-presets button:hover { border-color:var(--gold-deep); color:var(--gold-lit); }
+  .range-presets button.active { background:var(--gold); border-color:var(--gold); color:#241109; font-weight:700; }
+  .range-custom { grid-column:2 / 3; }
+  .range-field { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ash); }
+  .range-field input, .sort-select {
+    min-height:36px; padding:7px 10px; background:var(--void); border:1px solid var(--edge); color:var(--bone);
+    font-family:var(--mono); font-size:13px; border-radius:2px;
+  }
+  .range-field input:focus, .sort-select:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,147,74,.13); }
+  .range-status { grid-column:1 / -1; font-family:var(--serif); font-style:italic; font-size:13px; color:var(--ash); }
+  .table-tools { justify-content:space-between; margin:0 0 12px; }
+  .table-tools .left, .table-tools .right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .result-count { font-family:var(--serif); font-style:italic; font-size:14px; color:var(--ash); }
+  .sort-label { font-size:12px; color:var(--ash); }
+  .sort-head { width:100%; min-height:auto; padding:0; background:transparent; border:none; color:inherit; font-family:inherit; font-size:inherit; letter-spacing:inherit; text-transform:inherit; text-align:inherit; }
+  .sort-head:hover { color:var(--gold-lit); }
+  th.sorting .sort-head::after { content:"  ◆"; color:var(--truth-lit); font-size:10px; }
+
   /* 台帳 */
   .register-scroll { overflow-x:auto; border:1px solid var(--edge); }
   table { width:100%; border-collapse:collapse; font-size:13.5px; white-space:nowrap; background:var(--panel); }
@@ -339,13 +394,16 @@
     }
     .userbar,
     .masthead,
+    .quick-nav,
     .truth,
     .stats,
     .migrate-note,
+    .filter-panel,
     .register-section,
     footer { grid-column:1 / -1; }
     .masthead { padding:26px 0 16px; }
     .masthead h1 { font-size:48px; }
+    .quick-nav { top:10px; margin:0 0 2px; }
     .truth { margin:4px 0 0; padding:38px 32px 34px; }
     .truth .circle { width:390px; height:390px; }
     .truth .grand { font-size:86px; }
@@ -356,6 +414,9 @@
     .calendar-section { grid-column:1 / 2; }
     .chart-section { grid-column:2 / 3; }
     .register-section { margin-top:2px; }
+    .filter-panel { grid-template-columns:auto auto minmax(0,1fr); margin-bottom:0; }
+    .range-custom { grid-column:auto; justify-content:flex-end; }
+    .range-status { grid-column:1 / -1; }
     .chap { min-height:32px; }
     .cal-cell { min-height:78px; padding:7px 8px 8px; }
     .cal-cell .d { font-size:13px; }
@@ -393,6 +454,20 @@
   /* ── スマホ最適化 ── */
   @media (max-width:560px){
     .sheet { padding:0 15px 80px; }
+    .quick-nav { margin:0 -15px 18px; border-left:none; border-right:none; justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .quick-nav a { flex:none; }
+    .quick-nav-label { flex:none; }
+    .section-head { align-items:flex-start; flex-direction:column; gap:10px; }
+    .section-head-tools { width:100%; justify-content:space-between; }
+    .filter-panel { display:block; padding:14px; }
+    .filter-title { margin-bottom:10px; }
+    .range-presets, .range-custom, .table-tools, .table-tools .left, .table-tools .right { gap:7px; }
+    .range-custom { margin-top:10px; }
+    .range-field { width:100%; justify-content:space-between; }
+    .range-field input { flex:1; min-width:0; }
+    .range-status { margin-top:10px; }
+    .table-tools { align-items:flex-start; }
+    .sort-select { min-height:40px; }
     .stats { grid-template-columns:1fr 1fr; }
     .truth { padding:30px 16px 26px; }
     .cal-cell { min-height:52px; }
@@ -511,8 +586,17 @@
     <div class="rule"><span class="lozenge"></span></div>
   </header>
 
+  <nav class="quick-nav reveal" aria-label="ページ内目次">
+    <span class="quick-nav-label">Menu</span>
+    <a href="#summary">総差枚</a>
+    <a href="#rangeControl">表示範囲</a>
+    <a href="#calendar">暦</a>
+    <a href="#charts">推移</a>
+    <a href="#register">台帳</a>
+  </nav>
+
   <!-- 総差枚 = 赤き真実 -->
-  <section class="truth reveal">
+  <section class="truth reveal" id="summary">
     <svg class="circle" viewBox="0 0 100 100" style="color:var(--gold)" aria-hidden="true"><use href="#sigil"/></svg>
     <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
     <span class="seal">真実</span>
@@ -534,8 +618,25 @@
     <button class="btn-quiet" id="migrateDismiss">あとで</button>
   </div>
 
+  <section class="filter-panel reveal" id="rangeControl" aria-label="表示範囲の選択">
+    <div class="filter-title">表示範囲</div>
+    <div class="range-presets">
+      <button type="button" data-range="all" class="active">全期間</button>
+      <button type="button" data-range="1y">1年</button>
+      <button type="button" data-range="6m">半年</button>
+      <button type="button" data-range="3m">3か月</button>
+      <button type="button" data-range="1m">1か月</button>
+    </div>
+    <div class="range-custom">
+      <label class="range-field">開始 <input type="date" id="rangeFrom"></label>
+      <label class="range-field">終了 <input type="date" id="rangeTo"></label>
+      <button type="button" class="btn-quiet" id="rangeClear">全期間に戻す</button>
+    </div>
+    <div class="range-status" id="rangeStatus">全期間を表示中</div>
+  </section>
+
   <!-- 暦 -->
-  <section class="section reveal calendar-section">
+  <section class="section reveal calendar-section" id="calendar">
     <div class="chap"><span class="mark"></span><h2>暦</h2><span class="en">Calendar</span></div>
     <div class="cal-head">
       <div class="cal-title"><span class="fig" id="calYear"></span>年 <span id="calMonth"></span>月</div>
@@ -554,7 +655,7 @@
   </section>
 
   <!-- 図表 -->
-  <section class="section reveal chart-section">
+  <section class="section reveal chart-section" id="charts">
     <div class="chap"><span class="mark"></span><h2>推移を読む</h2><span class="en">Charts</span></div>
     <div class="chart-tabs">
       <button data-chart="cumulative" class="active">累計差枚</button>
@@ -566,11 +667,32 @@
   </section>
 
   <!-- 台帳 -->
-  <section class="section reveal register-section">
-    <div class="chap"><span class="mark"></span><h2>実戦台帳</h2><span class="en">Register</span></div>
+  <section class="section reveal register-section" id="register">
+    <div class="section-head register-head">
+      <div class="chap"><span class="mark"></span><h2>実戦台帳</h2><span class="en">Register</span></div>
+      <div class="section-head-tools">
+        <span class="result-count register-count" id="resultCount">0件</span>
+        <button type="button" class="btn-quiet collapse-toggle" id="registerToggle" aria-expanded="true" aria-controls="registerContent"><span class="caret" aria-hidden="true">▾</span><span class="toggle-text">台帳を閉じる</span></button>
+      </div>
+    </div>
+    <div class="register-content" id="registerContent">
+    <div class="table-tools">
+      <div class="left"><span class="table-note">見出しクリックでも並び替えできます</span></div>
+      <div class="right">
+        <span class="sort-label">並び替え</span>
+        <select id="sortKey" class="sort-select" aria-label="並び替え項目">
+          <option value="date">日付</option>
+          <option value="diff">差枚</option>
+          <option value="games">回転数</option>
+          <option value="bitaRate">ビタ成功率</option>
+          <option value="setting">設定</option>
+        </select>
+        <button type="button" class="btn-quiet" id="sortDir">降順</button>
+      </div>
+    </div>
     <div class="register-scroll">
       <table>
-        <thead><tr><th>日付</th><th>差枚</th><th>回転</th><th>ビタ</th><th>成功率</th><th>設定</th><th>覚書</th><th></th></tr></thead>
+        <thead><tr><th data-sort-col="date"><button type="button" class="sort-head" data-sort="date">日付</button></th><th data-sort-col="diff"><button type="button" class="sort-head" data-sort="diff">差枚</button></th><th data-sort-col="games"><button type="button" class="sort-head" data-sort="games">回転</button></th><th>ビタ</th><th data-sort-col="bitaRate"><button type="button" class="sort-head" data-sort="bitaRate">成功率</button></th><th data-sort-col="setting"><button type="button" class="sort-head" data-sort="setting">設定</button></th><th>覚書</th><th></th></tr></thead>
         <tbody id="historyBody"></tbody>
       </table>
     </div>
@@ -580,6 +702,7 @@
       <button type="button" class="btn-quiet" id="exportJsonBtn">JSONで封じる</button>
       <button type="button" class="btn-quiet" id="importJsonBtn">JSONを解く</button>
       <input type="file" id="importFile" accept=".json" style="display:none">
+    </div>
     </div>
   </section>
 
@@ -659,6 +782,11 @@
   let store = null;
   let editId = null;
   let currentChart = "cumulative";
+  let rangeMode = "all";
+  let dateFrom = "";
+  let dateTo = "";
+  let sortState = { key:"date", dir:"desc" };
+  let registerCollapsed = localStorage.getItem("umineko_register_collapsed") === "1";
   let chart = null;
   let firstPaint = true;
   const now = new Date();
@@ -675,9 +803,30 @@
   function hideLoading(){ $("loading").hidden = true; }
 
   function sortedRecords(){ return [...records].sort((a,b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))); }
+  function normalizeRange(){ if (dateFrom && dateTo && dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom]; }
+  function inRange(r){ normalizeRange(); return (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo); }
+  function visibleRecords(){ return sortedRecords().filter(inRange); }
+  function bitaRateValue(r){ return r.bitaTry ? r.bitaHit / r.bitaTry : -1; }
+  function sortedVisibleRecords(){
+    const list = visibleRecords();
+    const dir = sortState.dir === "asc" ? 1 : -1;
+    const get = r => {
+      if (sortState.key === "diff") return r.diff || 0;
+      if (sortState.key === "games") return r.games || 0;
+      if (sortState.key === "bitaRate") return bitaRateValue(r);
+      if (sortState.key === "setting") return Number(r.setting) || 0;
+      return r.date;
+    };
+    list.sort((a,b) => {
+      const av = get(a), bv = get(b);
+      const c = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+      return c === 0 ? a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)) : c * dir;
+    });
+    return list;
+  }
   function byDate(){
     const map = new Map();
-    for (const r of sortedRecords()){
+    for (const r of visibleRecords()){
       if (!map.has(r.date)) map.set(r.date, { date:r.date, diff:0, games:0, bitaTry:0, bitaHit:0, count:0, firstPhoto:null, photoCount:0 });
       const d = map.get(r.date);
       d.diff += r.diff; d.games += r.games||0; d.bitaTry += r.bitaTry||0; d.bitaHit += r.bitaHit||0; d.count++;
@@ -685,6 +834,58 @@
       if (ph.length){ if (!d.firstPhoto) d.firstPhoto = ph[0]; d.photoCount += ph.length; }
     }
     return map;
+  }
+  function toISODate(d){ return d.toLocaleDateString("sv-SE"); }
+  function maxRecordDate(){ const list = sortedRecords(); return list.length ? list[list.length - 1].date : localToday(); }
+  function setPresetRange(mode){
+    rangeMode = mode;
+    if (mode === "all") { dateFrom = ""; dateTo = ""; }
+    else {
+      const end = new Date(maxRecordDate() + "T00:00:00");
+      const start = new Date(end);
+      if (mode === "1y") start.setFullYear(start.getFullYear() - 1);
+      if (mode === "6m") start.setMonth(start.getMonth() - 6);
+      if (mode === "3m") start.setMonth(start.getMonth() - 3);
+      if (mode === "1m") start.setMonth(start.getMonth() - 1);
+      dateFrom = toISODate(start); dateTo = toISODate(end);
+    }
+    renderAll();
+  }
+  function rangeLabel(){
+    if (!dateFrom && !dateTo) return "全期間";
+    if (dateFrom && dateTo) return `${dateFrom} 〜 ${dateTo}`;
+    if (dateFrom) return `${dateFrom} 以降`;
+    return `${dateTo} 以前`;
+  }
+  function updateRangeUI(){
+    if (!$('rangeFrom')) return;
+    normalizeRange();
+    $('rangeFrom').value = dateFrom;
+    $('rangeTo').value = dateTo;
+    document.querySelectorAll('[data-range]').forEach(btn => btn.classList.toggle('active', btn.dataset.range === rangeMode));
+    const shown = visibleRecords().length;
+    const total = records.length;
+    const days = [...byDate().values()].length;
+    const extra = shown === total ? '' : `、全${fmt(total)}件中`;
+    $('rangeStatus').textContent = `${rangeLabel()}を表示中（${fmt(shown)}件 / ${fmt(days)}日${extra}）`;
+    if ($('resultCount')) $('resultCount').textContent = `${fmt(shown)}件を表示`;
+  }
+  function updateSortUI(){
+    if (!$('sortKey')) return;
+    $('sortKey').value = sortState.key;
+    $('sortDir').textContent = sortState.dir === 'asc' ? '昇順' : '降順';
+    document.querySelectorAll('[data-sort-col]').forEach(th => th.classList.toggle('sorting', th.dataset.sortCol === sortState.key));
+  }
+  function setRegisterCollapsed(flag){
+    registerCollapsed = !!flag;
+    const section = $('register');
+    const btn = $('registerToggle');
+    if (!section || !btn) return;
+    section.classList.toggle('collapsed', registerCollapsed);
+    btn.setAttribute('aria-expanded', String(!registerCollapsed));
+    const text = btn.querySelector('.toggle-text');
+    if (text) text.textContent = registerCollapsed ? '台帳を開く' : '台帳を閉じる';
+    localStorage.setItem('umineko_register_collapsed', registerCollapsed ? '1' : '0');
   }
 
   // ───────── データ層 ─────────
@@ -962,7 +1163,7 @@
   // ───────── 台帳 ─────────
   function renderTable(){
     const tbody = $("historyBody"); tbody.innerHTML = "";
-    const list = sortedRecords().reverse();
+    const list = sortedVisibleRecords();
     $("emptyMsg").style.display = list.length ? "none" : "block";
     for (const r of list){
       const tr = document.createElement("tr");
@@ -998,15 +1199,18 @@
     if (chart){ chart.destroy(); chart=null; }
     if (!hasData) return;
     const ctx = $("mainChart").getContext("2d");
-    const base = { x:{grid:{color:C.grid}}, y:{grid:{color:C.grid}} };
+    const tickLimit = days.length > 240 ? 10 : 12;
+    const base = { x:{grid:{color:C.grid}, ticks:{autoSkip:true, maxTicksLimit:tickLimit, maxRotation:55}}, y:{grid:{color:C.grid}} };
+    const lineDots = n => ({ pointRadius:n > 90 ? 0 : n > 45 ? 1.4 : 2.5, pointHoverRadius:5, pointHitRadius:10 });
     if (currentChart==="cumulative"){
       let cum=0; const data=days.map(d=>(cum+=d.diff));
-      chart=new Chart(ctx,{type:"line",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data,borderColor:C.goldLit,backgroundColor:"rgba(236,202,121,.10)",fill:true,tension:.2,borderWidth:2,pointRadius:2.5,pointBackgroundColor:C.gold}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"line",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data,borderColor:C.goldLit,backgroundColor:"rgba(236,202,121,.10)",fill:true,tension:.18,borderWidth:2,pointBackgroundColor:C.gold,...lineDots(days.length)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
     } else if (currentChart==="daily"){
-      chart=new Chart(ctx,{type:"bar",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data:days.map(d=>d.diff),backgroundColor:days.map(d=>d.diff>=0?C.goldLit:C.truth)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"bar",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data:days.map(d=>d.diff),backgroundColor:days.map(d=>d.diff>=0?C.goldLit:C.truth),categoryPercentage:1,barPercentage:days.length>120?1:.9}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
     } else if (currentChart==="bita"){
       const wb=days.filter(d=>d.bitaTry>0);
-      chart=new Chart(ctx,{type:"line",data:{labels:wb.map(d=>shortDate(d.date)),datasets:[{data:wb.map(d=>+(d.bitaHit/d.bitaTry*100).toFixed(1)),borderColor:C.blue,backgroundColor:"rgba(95,149,216,.12)",fill:true,tension:.2,borderWidth:2,pointRadius:2.5,pointBackgroundColor:C.blue}]},options:chartOpts({x:{grid:{color:C.grid}},y:{grid:{color:C.grid},min:0,max:100}},v=>v+" %")});
+      const bitaBase = { x:{grid:{color:C.grid}, ticks:{autoSkip:true, maxTicksLimit:wb.length > 240 ? 10 : 12, maxRotation:55}}, y:{grid:{color:C.grid},min:0,max:100} };
+      chart=new Chart(ctx,{type:"line",data:{labels:wb.map(d=>shortDate(d.date)),datasets:[{data:wb.map(d=>+(d.bitaHit/d.bitaTry*100).toFixed(1)),borderColor:C.blue,backgroundColor:"rgba(95,149,216,.12)",fill:true,tension:.18,borderWidth:2,pointBackgroundColor:C.blue,...lineDots(wb.length)}]},options:chartOpts(bitaBase,v=>v+" %")});
     } else {
       const m=new Map(); for(const d of days){const k=d.date.slice(0,7); m.set(k,(m.get(k)||0)+d.diff);}
       const keys=[...m.keys()].sort();
@@ -1137,6 +1341,24 @@
     renderChart();
   });
 
+  document.querySelector(".range-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-range]"); if (!b) return;
+    setPresetRange(b.dataset.range);
+  });
+  function applyCustomRange(){ rangeMode = "custom"; dateFrom = $("rangeFrom").value; dateTo = $("rangeTo").value; renderAll(); }
+  $("rangeFrom").addEventListener("change", applyCustomRange);
+  $("rangeTo").addEventListener("change", applyCustomRange);
+  $("rangeClear").addEventListener("click", () => setPresetRange("all"));
+  $("sortKey").addEventListener("change", e => { sortState.key = e.target.value; renderTable(); updateSortUI(); });
+  $("sortDir").addEventListener("click", () => { sortState.dir = sortState.dir === "asc" ? "desc" : "asc"; renderTable(); updateSortUI(); });
+  $("registerToggle").addEventListener("click", () => setRegisterCollapsed(!registerCollapsed));
+  document.querySelectorAll(".sort-head").forEach(btn => btn.addEventListener("click", () => {
+    const key = btn.dataset.sort;
+    if (sortState.key === key) sortState.dir = sortState.dir === "asc" ? "desc" : "asc";
+    else { sortState.key = key; sortState.dir = "desc"; }
+    renderTable(); updateSortUI();
+  }));
+
   // ───────── 書き出し・読み込み ─────────
   function download(name, text, mime){ const blob=new Blob([text],{type:mime}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
   $("exportCsvBtn").addEventListener("click", () => {
@@ -1167,7 +1389,7 @@
   });
 
   // ───────── 描画まとめ ─────────
-  function renderAll(){ renderSummary(); renderCalendar(); renderTable(); renderChart(); firstPaint=false; }
+  function renderAll(){ updateRangeUI(); updateSortUI(); setRegisterCollapsed(registerCollapsed); renderSummary(); renderCalendar(); renderTable(); renderChart(); firstPaint=false; }
 
   setAuthMode("login");
   boot();
