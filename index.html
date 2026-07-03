@@ -165,13 +165,19 @@
     color:var(--bone); font-family:var(--jp); font-size:12.5px; letter-spacing:.06em;
   }
   .quick-nav-toggle:hover, .quick-nav-toggle:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); }
-  .quick-nav a {
+  .quick-nav a, .quick-nav .qn-item {
     min-height:34px; padding:7px 13px; display:inline-flex; align-items:center; justify-content:center;
-    border:1px solid var(--edge); color:var(--ash); text-decoration:none;
-    font-size:12.5px; letter-spacing:.06em; background:rgba(13,10,13,.36);
+    border:1px solid var(--edge); color:var(--ash); text-decoration:none; border-radius:3px; cursor:pointer;
+    font-family:var(--jp); font-size:12.5px; letter-spacing:.06em; background:rgba(13,10,13,.36);
     transition:background .18s,color .18s,border-color .18s;
   }
-  .quick-nav a:hover, .quick-nav a:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); background:rgba(184,147,74,.10); }
+  .quick-nav a:hover, .quick-nav a:focus-visible,
+  .quick-nav .qn-item:hover, .quick-nav .qn-item:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); background:rgba(184,147,74,.10); }
+  .quick-nav .qn-counter { color:var(--gold-lit); border-color:var(--gold-deep); background:rgba(184,147,74,.16); }
+  .quick-nav .qn-logout:hover, .quick-nav .qn-logout:focus-visible { color:var(--truth-lit); border-color:var(--truth); background:rgba(216,32,44,.12); }
+  .qn-who { flex-basis:100%; width:100%; text-align:center; font-family:var(--serif); font-style:italic; font-size:12px; color:var(--ash-dim); padding-top:4px; }
+  .qn-who:empty { display:none; }
+  .qn-who b { font-family:var(--mono); font-style:normal; color:var(--gold-lit); font-size:11px; }
   #summary, #rangeControl, #calendar, #charts, #register { scroll-margin-top:86px; }
 
   @media (max-width:760px){
@@ -188,7 +194,7 @@
       margin:0 0 2px;
       text-align:center;
     }
-    .quick-nav a {
+    .quick-nav a, .quick-nav .qn-item {
       width:100%;
       min-width:0;
       min-height:38px;
@@ -197,6 +203,7 @@
       letter-spacing:.03em;
       white-space:nowrap;
     }
+    .qn-who { grid-column:1 / -1; }
   }
   @media (max-width:560px){
     .quick-nav {
@@ -211,7 +218,7 @@
       margin-top:8px;
     }
     .quick-nav.mobile-collapsed .quick-nav-body { display:none; }
-    .quick-nav a {
+    .quick-nav a, .quick-nav .qn-item {
       min-height:36px;
       padding:8px 4px;
       font-size:11.5px;
@@ -221,7 +228,7 @@
   @media (max-width:380px){
     .quick-nav-head { gap:8px; }
     .quick-nav-toggle { min-height:32px; padding:6px 10px; font-size:12px; }
-    .quick-nav a { font-size:11px; }
+    .quick-nav a, .quick-nav .qn-item { font-size:11px; }
   }
 
   /* 折りたたみ可能な章 */
@@ -700,14 +707,6 @@
 
 <!-- ③ 帳簿本体 -->
 <main class="sheet" id="app" hidden>
-  <div class="userbar reveal">
-    <span class="who" id="whoami"></span>
-    <span class="userbar-actions">
-      <button class="btn-quiet" id="counterOpen">小役カウンター</button>
-      <button class="btn-quiet" id="logoutBtn">退帳</button>
-    </span>
-  </div>
-
   <header class="masthead reveal">
     <svg class="crest" viewBox="0 0 100 100" width="60" height="60" style="color:var(--gold)"><use href="#sigil"/></svg>
     <div class="over">Beatrice&rsquo;s</div>
@@ -716,10 +715,10 @@
     <div class="rule"><span class="lozenge"></span></div>
   </header>
 
-  <nav class="quick-nav reveal mobile-collapsed" id="quickNav" aria-label="ページ内目次">
+  <nav class="quick-nav reveal mobile-collapsed" id="quickNav" aria-label="メニュー">
     <div class="quick-nav-head">
       <span class="quick-nav-label quick-nav-label-mobile">Menu</span>
-      <button type="button" class="quick-nav-toggle" id="quickNavToggle" aria-expanded="false" aria-controls="quickNavBody">目次を開く</button>
+      <button type="button" class="quick-nav-toggle" id="quickNavToggle" aria-expanded="false" aria-controls="quickNavBody">☰ メニュー</button>
     </div>
     <div class="quick-nav-body" id="quickNavBody">
       <span class="quick-nav-label quick-nav-label-desktop">Menu</span>
@@ -728,6 +727,9 @@
       <a href="#calendar">暦</a>
       <a href="#charts">推移</a>
       <a href="#register">台帳</a>
+      <button type="button" class="qn-item qn-counter" id="counterOpen">小役カウンター</button>
+      <button type="button" class="qn-item qn-logout" id="logoutBtn">退帳</button>
+      <span class="qn-who" id="whoami"></span>
     </div>
   </nav>
 
@@ -977,11 +979,11 @@
       }
       const expanded = !nav.classList.contains("mobile-collapsed");
       btn.setAttribute("aria-expanded", expanded ? "true" : "false");
-      btn.textContent = expanded ? "目次を閉じる" : "目次を開く";
+      btn.textContent = expanded ? "× 閉じる" : "☰ メニュー";
     } else {
       nav.classList.remove("mobile-collapsed");
       btn.setAttribute("aria-expanded", "true");
-      btn.textContent = "目次";
+      btn.textContent = "メニュー";
     }
   }
 
@@ -1075,6 +1077,11 @@
   const asPhotos = v => Array.isArray(v) ? v.filter(x => typeof x === "string") : [];
   const fromDb = r => ({ id:r.id, date:r.date, diff:r.diff, games:r.games, bitaTry:r.bita_try, bitaHit:r.bita_hit, setting:r.setting||"", memo:r.memo||"", photos:asPhotos(r.photos) });
   const toDb   = rec => ({ user_id:user.id, date:rec.date, diff:rec.diff, games:rec.games, bita_try:rec.bitaTry, bita_hit:rec.bitaHit, setting:rec.setting, memo:rec.memo, photos:asPhotos(rec.photos) });
+  // ライブDBに photos 列が無い環境でも保存が全滅しないための保険
+  let photosOk = true;
+  const stripPhotos = o => { const c = Object.assign({}, o); delete c.photos; return c; };
+  const isPhotosColMissing = e => !!e && /photos/i.test(e.message||"") && /(column|schema cache)/i.test(e.message||"");
+  function warnPhotoMigration(rec){ if ((rec.photos||[]).length) toast("写真の保存にはDB移行が必要です。記録自体は保存しました（memo・数値はOK）。", true); }
 
   const Local = {
     kind:"local",
@@ -1092,12 +1099,20 @@
       records = data.map(fromDb);
     },
     async add(rec){
-      const { data, error } = await sb.from("records").insert(toDb(rec)).select().single();
+      let { data, error } = await sb.from("records").insert(photosOk ? toDb(rec) : stripPhotos(toDb(rec))).select().single();
+      if (error && isPhotosColMissing(error)){
+        photosOk = false; warnPhotoMigration(rec);
+        ({ data, error } = await sb.from("records").insert(stripPhotos(toDb(rec))).select().single());
+      }
       if (error) throw error;
       records.push(fromDb(data));
     },
     async update(id, rec){
-      const { data, error } = await sb.from("records").update(toDb(rec)).eq("id", id).select().single();
+      let { data, error } = await sb.from("records").update(photosOk ? toDb(rec) : stripPhotos(toDb(rec))).eq("id", id).select().single();
+      if (error && isPhotosColMissing(error)){
+        photosOk = false; warnPhotoMigration(rec);
+        ({ data, error } = await sb.from("records").update(stripPhotos(toDb(rec))).eq("id", id).select().single());
+      }
       if (error) throw error;
       records = records.map(r => r.id === id ? fromDb(data) : r);
     },
@@ -1651,7 +1666,7 @@
   }
   function initCounter(){
     buildCounterGrid(); renderCounter(); applyCompact();
-    $("counterOpen").addEventListener("click", () => { renderCounter(); $("counterMode").hidden = false; });
+    $("counterOpen").addEventListener("click", () => { renderCounter(); $("counterMode").hidden = false; $("quickNav")?.classList.add("mobile-collapsed"); syncQuickNav(); });
     $("counterClose").addEventListener("click", () => { $("counterMode").hidden = true; });
     $("counterCompact").addEventListener("click", () => {
       counterCompact = !counterCompact;
