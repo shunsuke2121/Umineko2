@@ -97,7 +97,7 @@
   .masthead { text-align:center; padding:20px 0 26px; position:relative; }
   .masthead .crest { display:block; margin:0 auto 10px; }
   .masthead .over { font-family:var(--serif); font-style:italic; font-size:16px; color:var(--truth-lit); letter-spacing:.03em; }
-  .masthead h1 { font-family:var(--jp); font-weight:800; font-size:clamp(30px,8vw,44px); letter-spacing:.1em; line-height:1.12; color:var(--gold-lit); text-shadow:0 2px 18px rgba(184,147,74,.28); }
+  .masthead h1 { font-family:var(--jp); font-weight:800; font-size:clamp(30px,8vw,44px); letter-spacing:.1em; line-height:1.12; color:var(--gold-lit); text-shadow:0 2px 18px rgba(184,147,74,.28); text-wrap:balance; }
   .masthead .sub { font-family:var(--cinzel); font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--ash); margin-top:10px; }
   .masthead .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; color:var(--gold-deep); }
   .masthead .rule::before, .masthead .rule::after { content:""; height:1px; width:64px; background:linear-gradient(90deg, transparent, var(--gold-deep)); }
@@ -164,7 +164,7 @@
   .entry-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 16px; margin-bottom:22px; }
   .field label { display:block; font-family:var(--cinzel); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin-bottom:7px; }
   .field input, .field select { width:100%; padding:11px 12px; background:var(--void); border:1px solid var(--edge); color:var(--bone); font-family:var(--mono); font-size:16px; border-radius:2px; transition:border-color .2s, box-shadow .2s; }
-  .field input::placeholder { color:var(--ash-dim); }
+  .field input::placeholder, .gate-field input::placeholder { color:var(--ash); opacity:1; }
   .field input:focus, .field select:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,147,74,.13); }
   .field select { font-family:var(--jp); }
   .field.wide { grid-column:1/-1; }
@@ -185,7 +185,7 @@
   thead th { font-family:var(--cinzel); font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); text-align:right; padding:12px 14px; border-bottom:1px solid var(--edge); background:var(--panel-2); }
   thead th:first-child { text-align:left; }
   tbody td { padding:11px 14px; text-align:right; border-bottom:1px solid var(--edge-soft); font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--bone); }
-  tbody td:first-child { text-align:left; font-family:var(--jp); box-shadow:inset 3px 0 0 -1px var(--truth); padding-left:18px; color:var(--bone); }
+  tbody td:first-child { text-align:left; font-family:var(--jp); color:var(--gold-lit); }
   tbody tr:nth-child(even) td { background:rgba(255,255,255,.02); }
   tbody tr:hover td { background:rgba(184,147,74,.06); }
   td.amt.plus { color:var(--gold-lit); } td.amt.minus { color:var(--truth-lit); }
@@ -205,10 +205,6 @@
   #toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--raise); color:var(--bone); font-family:var(--jp); font-size:13.5px; padding:12px 22px; border:1px solid var(--gold-deep); border-radius:2px; box-shadow:0 16px 40px -16px #000; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:99; max-width:88vw; }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   #toast.err { border-color:var(--truth); color:var(--truth-lit); }
-
-  /* 羊皮紙の繊維に代わる、闇の質感 */
-  .grain { position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.045;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
   /* 段階的な入場（rAF凍結時も .revealed で必ず表示） */
   @keyframes riseIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
@@ -239,7 +235,7 @@
     .register-scroll { border:none; overflow:visible; }
     table, tbody, tr, td { display:block; width:100%; }
     thead { display:none; }
-    tbody tr { border:1px solid var(--edge); background:var(--panel); margin-bottom:12px; box-shadow:inset 3px 0 0 var(--truth); }
+    tbody tr { border:1px solid var(--edge); background:var(--panel); margin-bottom:12px; }
     tbody tr:nth-child(even) td { background:none; }
     tbody tr:hover td { background:none; }
     tbody td { display:flex; justify-content:space-between; align-items:baseline; text-align:right; border:none; border-bottom:1px dotted var(--edge-soft); padding:9px 15px; box-shadow:none; white-space:normal; }
@@ -254,7 +250,6 @@
 </style>
 </head>
 <body>
-<div class="grain" aria-hidden="true"></div>
 
 <!-- 共通で使う紋章（黄金の召喚陣） -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
