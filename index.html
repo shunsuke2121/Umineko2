@@ -219,6 +219,26 @@
   .truth .circle { animation:spin 90s linear infinite; }
   @keyframes spin { to { transform:translate(-50%,-50%) rotate(360deg); } }
 
+  /* 押下フィードバック & タップ遅延解消 */
+  button, .cal-cell, a { touch-action:manipulation; }
+  .btn-primary:active, .btn-ghost:active, .btn-quiet:active, .cal-nav button:active, .chart-tabs button:active, .row-actions button:active { transform:scale(.97); }
+  .cal-cell:not(.blank):active { background:rgba(184,147,74,.24); }
+
+  /* 総差枚＝赤き真実の"宣告"に専用の入場を与える（画一的な一斉フェードを避ける） */
+  @keyframes truthDeclare { from { opacity:0; transform:translateY(14px) scale(.965); } to { opacity:1; transform:none; } }
+  .js #app.revealing .truth.reveal { animation:truthDeclare .85s cubic-bezier(.2,.7,.3,1) forwards; animation-delay:.12s; }
+
+  /* ローディング幕（クラウド読込中） */
+  .loading-veil { position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    background:rgba(13,10,13,.86); color:var(--gold-lit); font-family:var(--jp); letter-spacing:.25em; font-size:13px; }
+  .loading-veil .spin { animation:spin 2.4s linear infinite; }
+  @media (prefers-reduced-motion:reduce){ .loading-veil .spin { animation:none; } }
+
+  /* チャートの空状態 */
+  .chart-empty { display:none; position:absolute; inset:0; align-items:center; justify-content:center; text-align:center; padding:0 20px;
+    font-family:var(--serif); font-style:italic; font-size:15px; color:var(--ash); }
+  .chart-empty.show { display:flex; }
+
   [hidden] { display:none !important; }
   @media (prefers-reduced-motion:reduce){ .sheet{ animation:none; opacity:1; } }
 
@@ -288,7 +308,7 @@
       <button class="btn-primary" id="cfgSave">保存して進む</button>
       <button class="btn-quiet" id="cfgLocal">登録せずこの端末だけで使う</button>
     </div>
-    <div class="gate-msg" id="cfgMsg"></div>
+    <div class="gate-msg" id="cfgMsg" role="alert" aria-live="assertive"></div>
   </div>
 </div>
 
@@ -313,7 +333,7 @@
         <button type="submit" class="btn-primary" id="authSubmit">ログイン</button>
       </div>
     </form>
-    <div class="gate-msg" id="authMsg"></div>
+    <div class="gate-msg" id="authMsg" role="alert" aria-live="assertive"></div>
     <div class="gate-switch" id="authSwitch">はじめての方は <a id="toRegister">アカウント登録</a></div>
   </div>
 </div>
@@ -410,7 +430,7 @@
       <button data-chart="bita">ビタ成功率</button>
       <button data-chart="monthly">月別収支</button>
     </div>
-    <div class="chart-frame"><div class="chart-wrap"><canvas id="mainChart"></canvas></div></div>
+    <div class="chart-frame"><div class="chart-wrap"><canvas id="mainChart"></canvas><div class="chart-empty" id="chartEmpty">まだ記録がない。最初の一戦を記せば、ここに軌跡が浮かぶ。</div></div></div>
   </section>
 
   <!-- 台帳 -->
@@ -434,7 +454,12 @@
   <footer id="footNote">クラウドに保管中。どの端末からでも同じ帳簿を開けます。</footer>
 </main>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<div class="loading-veil" id="loading" hidden>
+  <svg class="spin" viewBox="0 0 100 100" width="56" height="56" style="color:var(--gold)" aria-hidden="true"><use href="#sigil"/></svg>
+  <span id="loadingMsg">帳簿を紐解いています…</span>
+</div>
 
 <script>
 (() => {
@@ -467,6 +492,8 @@
   const shortDate = iso => { const [, m, d] = iso.split("-"); return `${Number(m)}/${Number(d)}`; };
   function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
   function toast(msg, isErr){ const t = $("toast"); t.textContent = msg; t.className = isErr ? "show err" : "show"; clearTimeout(toast._t); toast._t = setTimeout(() => t.className = "", 2600); }
+  function showLoading(msg){ if (msg) $("loadingMsg").textContent = msg; $("loading").hidden = false; }
+  function hideLoading(){ $("loading").hidden = true; }
 
   function sortedRecords(){ return [...records].sort((a,b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id))); }
   function byDate(){
@@ -636,6 +663,7 @@
     $("logoutBtn").textContent = "退帳";
     $("footNote").innerHTML = "クラウドに保管中。どの端末からでも同じ帳簿を開けます。";
     show("app");
+    showLoading("帳簿を紐解いています…");
     try {
       await Cloud.fetch();
       firstPaint = true; renderAll();
@@ -644,7 +672,7 @@
       toast("読み込み失敗: " + err.message, true);
       if (/relation .* does not exist|schema cache/i.test(err.message))
         toast("records テーブルが見つかりません。SQL Editor で作成SQLを実行してください。", true);
-    }
+    } finally { hideLoading(); }
   }
 
   // ── ローカル→クラウド 移行 ──
@@ -777,7 +805,10 @@
   function renderChart(){
     if (!window.Chart) return;
     const days = [...byDate().values()];
+    const hasData = days.length>0 && (currentChart!=="bita" || days.some(d=>d.bitaTry>0));
+    $("chartEmpty").classList.toggle("show", !hasData);
     if (chart){ chart.destroy(); chart=null; }
+    if (!hasData) return;
     const ctx = $("mainChart").getContext("2d");
     const base = { x:{grid:{color:C.grid}}, y:{grid:{color:C.grid}} };
     if (currentChart==="cumulative"){
