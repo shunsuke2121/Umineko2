@@ -7,237 +7,300 @@
 <script>document.documentElement.classList.add("js");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Shippori+Mincho:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,600;1,500;1,600&family=Shippori+Mincho:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --paper:#e7ddc4; --paper-lit:#efe7d1; --paper-edge:#ded2b3;
-    --ink:#2a231a; --ink-soft:#6f6350;
-    --oxblood:#7c2d29; --ledger:#3c5a45;
-    --gold:#9a7a2e; --gold-foil:#b8933f;
-    --rule:#c7b990; --rule-soft:#d6cbac;
-    --serif:"Cormorant Garamond","Shippori Mincho",serif;
-    --mincho:"Shippori Mincho","Yu Mincho",serif;
+    /* 闇 × 黄金 × 赤き真実 */
+    --void:#0d0a0d; --panel:#171015; --panel-2:#20141b; --raise:#2a1a22;
+    --edge:#3c2730; --edge-soft:#2c1c24;
+    --gold:#b8934a; --gold-lit:#ecca79; --gold-deep:#8a6a2f;
+    --truth:#d8202c; --truth-lit:#ff3b46;
+    --blue:#5f95d8;
+    --bone:#ece2d1; --ash:#9d8f88; --ash-dim:#6f6560;
+    --cinzel:"Cinzel", serif;
+    --serif:"Cormorant Garamond", serif;
+    --jp:"Shippori Mincho","Yu Mincho",serif;
     --mono:"DM Mono","SFMono-Regular",monospace;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html { -webkit-text-size-adjust:100%; }
   body {
-    background:var(--paper);
+    background:var(--void);
     background-image:
-      radial-gradient(120% 80% at 20% -10%, rgba(255,250,235,.5), transparent 55%),
-      radial-gradient(100% 90% at 110% 20%, rgba(120,90,50,.10), transparent 50%);
-    color:var(--ink); font-family:var(--mincho); font-weight:400; line-height:1.7;
+      radial-gradient(90% 55% at 50% -8%, rgba(120,30,40,.22), transparent 60%),
+      radial-gradient(70% 50% at 100% 12%, rgba(184,147,74,.10), transparent 55%),
+      radial-gradient(80% 60% at 0% 95%, rgba(90,20,30,.14), transparent 60%);
+    background-attachment:fixed;
+    color:var(--bone); font-family:var(--jp); font-weight:400; line-height:1.75;
     min-height:100vh; -webkit-font-smoothing:antialiased;
   }
   .fig { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
-  .plus{color:var(--ledger);} .minus{color:var(--oxblood);}
-  a { color:var(--oxblood); }
-  ::selection { background:rgba(184,147,63,.3); }
+  .plus{ color:var(--gold-lit); } .minus{ color:var(--truth-lit); }
+  a { color:var(--blue); }
+  ::selection { background:rgba(216,32,44,.32); color:#fff; }
+  :focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
 
-  /* ── ゲート（設定・認証）共通 ── */
-  .gate { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  /* ── ゲート（設定・認証） ── */
+  .gate { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:22px; }
   .gate-card {
-    width:100%; max-width:440px; background:var(--paper-lit);
-    border:1px solid var(--ink); padding:38px 34px 34px;
-    box-shadow:0 20px 60px -30px rgba(42,35,26,.7);
+    position:relative; width:100%; max-width:430px; background:var(--panel);
+    border:1px solid var(--edge); padding:40px 30px 32px; overflow:hidden;
+    box-shadow:0 30px 80px -40px #000, inset 0 1px 0 rgba(236,202,121,.06);
   }
-  .gate-card .over { font-family:var(--serif); font-style:italic; font-size:15px; color:var(--oxblood); }
-  .gate-card h1 { font-family:var(--mincho); font-weight:700; font-size:26px; letter-spacing:.06em; margin:2px 0 4px; }
-  .gate-card .sub { font-family:var(--serif); font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--ink-soft); }
-  .gate-card .lede { font-size:13.5px; color:var(--ink-soft); margin:18px 0 22px; line-height:1.8; }
-  .gate-field { margin-bottom:16px; }
-  .gate-field label { display:block; font-size:12px; color:var(--ink-soft); letter-spacing:.06em; margin-bottom:6px; }
+  .gate-card::before { /* 上辺の金線 */
+    content:""; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .gate-emblem { display:block; margin:0 auto 14px; opacity:.9; }
+  .gate-card .over { text-align:center; font-family:var(--serif); font-style:italic; font-size:16px; color:var(--truth-lit); letter-spacing:.02em; }
+  .gate-card h1 { text-align:center; font-family:var(--jp); font-weight:800; font-size:27px; letter-spacing:.08em; margin:3px 0 8px; color:var(--gold-lit); }
+  .gate-card .sub { text-align:center; font-family:var(--cinzel); font-size:11px; letter-spacing:.36em; text-transform:uppercase; color:var(--ash); }
+  .gate-card .lede { font-size:13.5px; color:var(--ash); margin:22px 0 22px; line-height:1.9; }
+  .gate-field { margin-bottom:18px; }
+  .gate-field label { display:block; font-family:var(--cinzel); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
   .gate-field input {
-    width:100%; padding:10px 4px; background:transparent; border:none;
-    border-bottom:1.5px solid var(--rule); color:var(--ink);
-    font-family:var(--mono); font-size:15px; border-radius:0; transition:border-color .2s;
+    width:100%; padding:12px 12px; background:var(--void); border:1px solid var(--edge);
+    color:var(--bone); font-family:var(--mono); font-size:16px; border-radius:2px; transition:border-color .2s, box-shadow .2s;
   }
-  .gate-field input:focus { outline:none; border-bottom-color:var(--oxblood); }
-  .gate-actions { display:flex; gap:12px; align-items:center; margin-top:24px; flex-wrap:wrap; }
-  .gate-msg { font-size:13px; margin-top:16px; padding:10px 12px; border-radius:2px; line-height:1.7; display:none; }
-  .gate-msg.err { display:block; background:rgba(124,45,41,.10); border:1px solid var(--oxblood); color:var(--oxblood); }
-  .gate-msg.ok  { display:block; background:rgba(60,90,69,.10); border:1px solid var(--ledger); color:var(--ledger); }
-  .gate-switch { margin-top:20px; font-size:13px; color:var(--ink-soft); }
-  .gate-switch a { cursor:pointer; text-decoration:underline; }
-  .gate-help { margin-top:22px; padding-top:16px; border-top:1px solid var(--rule); font-size:12px; color:var(--ink-soft); line-height:1.9; }
-  .gate-help summary { cursor:pointer; color:var(--ink); font-family:var(--mincho); }
-  .gate-help code { font-family:var(--mono); background:rgba(120,90,50,.10); padding:1px 5px; border-radius:2px; }
+  .gate-field input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,147,74,.14); }
+  .gate-actions { display:flex; gap:12px; align-items:center; margin-top:26px; flex-wrap:wrap; }
+  .gate-msg { font-size:13px; margin-top:16px; padding:11px 13px; border-radius:2px; line-height:1.7; display:none; }
+  .gate-msg.err { display:block; background:rgba(216,32,44,.12); border:1px solid var(--truth); color:var(--truth-lit); }
+  .gate-msg.ok  { display:block; background:rgba(184,147,74,.12); border:1px solid var(--gold-deep); color:var(--gold-lit); }
+  .gate-switch { margin-top:22px; font-size:13px; color:var(--ash); text-align:center; }
+  .gate-switch a { cursor:pointer; color:var(--gold-lit); text-decoration:underline; text-underline-offset:3px; }
+  .gate-help { margin-top:22px; padding-top:16px; border-top:1px solid var(--edge-soft); font-size:12px; color:var(--ash-dim); line-height:1.9; }
+  .gate-help summary { cursor:pointer; color:var(--gold); font-family:var(--jp); }
+  .gate-help code { font-family:var(--mono); background:rgba(184,147,74,.12); color:var(--gold-lit); padding:1px 5px; border-radius:2px; }
 
-  /* ── ボタン ── */
-  button { font-family:var(--mincho); font-size:14px; font-weight:600; letter-spacing:.08em; cursor:pointer; border-radius:2px; transition:background .18s,color .18s,border-color .18s; }
-  .btn-primary { padding:11px 30px; background:var(--ink); color:var(--paper-lit); border:1.5px solid var(--ink); }
-  .btn-primary:hover { background:var(--oxblood); border-color:var(--oxblood); }
-  .btn-primary:disabled { opacity:.5; cursor:default; background:var(--ink-soft); border-color:var(--ink-soft); }
-  .btn-ghost { padding:10px 20px; background:transparent; color:var(--ink); border:1px solid var(--rule); }
-  .btn-ghost:hover { border-color:var(--ink); }
-  .btn-quiet { padding:7px 14px; background:transparent; color:var(--ink-soft); border:1px solid var(--rule); font-size:12px; }
-  .btn-quiet:hover { color:var(--oxblood); border-color:var(--oxblood); }
+  /* ── ボタン（タップ領域を確保） ── */
+  button { font-family:var(--jp); font-size:14px; font-weight:600; letter-spacing:.08em; cursor:pointer; border-radius:2px; transition:background .18s,color .18s,border-color .18s,box-shadow .18s; }
+  .btn-primary { min-height:46px; padding:12px 28px; background:linear-gradient(180deg, var(--gold-lit), var(--gold)); color:#241109; border:1px solid var(--gold-lit); font-weight:700; box-shadow:0 6px 20px -10px rgba(236,202,121,.6); }
+  .btn-primary:hover { filter:brightness(1.08); }
+  .btn-primary:disabled { opacity:.45; cursor:default; filter:grayscale(.4); }
+  .btn-ghost { min-height:46px; padding:12px 22px; background:transparent; color:var(--bone); border:1px solid var(--edge); }
+  .btn-ghost:hover { border-color:var(--gold); color:var(--gold-lit); }
+  .btn-quiet { min-height:38px; padding:8px 15px; background:transparent; color:var(--ash); border:1px solid var(--edge); font-size:12.5px; }
+  .btn-quiet:hover { color:var(--gold-lit); border-color:var(--gold-deep); }
 
-  /* ── 本体 ── */
-  .sheet { max-width:940px; margin:0 auto; padding:0 26px 80px; opacity:0; animation:sheetIn .6s ease forwards; }
+  /* ── 本体（スマホ優先の1カラム） ── */
+  .sheet { max-width:600px; margin:0 auto; padding:0 20px 90px; opacity:0; animation:sheetIn .6s ease forwards; }
   @keyframes sheetIn { to { opacity:1; } }
 
-  .userbar { display:flex; justify-content:flex-end; align-items:center; gap:14px; padding-top:16px; font-family:var(--serif); font-size:13px; color:var(--ink-soft); }
-  .userbar .who { letter-spacing:.02em; }
-  .userbar .who b { font-family:var(--mono); font-weight:500; color:var(--ink); }
+  .userbar { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 0 4px; font-size:12.5px; color:var(--ash); flex-wrap:wrap; }
+  .userbar .who { font-family:var(--serif); font-style:italic; font-size:14px; letter-spacing:.02em; }
+  .userbar .who b { font-family:var(--mono); font-style:normal; font-weight:500; color:var(--gold-lit); font-size:12.5px; }
 
-  .masthead { padding:22px 0 22px; border-bottom:3px double var(--ink); margin-bottom:4px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; }
-  .masthead .brand .over { font-family:var(--serif); font-style:italic; font-size:15px; letter-spacing:.04em; color:var(--oxblood); margin-bottom:2px; }
-  .masthead .brand h1 { font-family:var(--mincho); font-weight:700; font-size:clamp(26px,5.2vw,40px); letter-spacing:.06em; line-height:1.1; }
-  .masthead .brand .sub { font-family:var(--serif); font-size:13px; letter-spacing:.34em; text-transform:uppercase; color:var(--ink-soft); margin-top:6px; }
-  .masthead .colophon { text-align:right; font-family:var(--serif); font-size:13px; color:var(--ink-soft); line-height:1.5; }
-  .masthead .colophon .seal { display:inline-block; margin-top:6px; border:1.5px solid var(--oxblood); color:var(--oxblood); font-family:var(--mincho); font-size:11px; letter-spacing:.3em; padding:3px 9px 3px 12px; border-radius:2px; }
+  /* 題字 */
+  .masthead { text-align:center; padding:20px 0 26px; position:relative; }
+  .masthead .crest { display:block; margin:0 auto 10px; }
+  .masthead .over { font-family:var(--serif); font-style:italic; font-size:16px; color:var(--truth-lit); letter-spacing:.03em; }
+  .masthead h1 { font-family:var(--jp); font-weight:800; font-size:clamp(30px,8vw,44px); letter-spacing:.1em; line-height:1.12; color:var(--gold-lit); text-shadow:0 2px 18px rgba(184,147,74,.28); }
+  .masthead .sub { font-family:var(--cinzel); font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--ash); margin-top:10px; }
+  .masthead .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; color:var(--gold-deep); }
+  .masthead .rule::before, .masthead .rule::after { content:""; height:1px; width:64px; background:linear-gradient(90deg, transparent, var(--gold-deep)); }
+  .masthead .rule::after { background:linear-gradient(90deg, var(--gold-deep), transparent); }
+  .masthead .rule .lozenge { width:7px; height:7px; background:var(--gold); transform:rotate(45deg); box-shadow:0 0 8px rgba(236,202,121,.5); }
 
-  .ledger-balance { display:grid; grid-template-columns:1.15fr 1fr; gap:34px; padding:30px 0 26px; border-bottom:1px solid var(--rule); margin-bottom:40px; }
-  .balance-hero .cap { font-family:var(--serif); font-size:13px; letter-spacing:.32em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px; }
-  .balance-hero .grand { font-family:var(--serif); font-weight:700; font-size:clamp(52px,12vw,92px); line-height:.95; color:var(--gold-foil); letter-spacing:-.01em; }
-  .balance-hero .grand.minus { color:var(--oxblood); }
-  .balance-hero .grand .unit { font-size:.28em; font-family:var(--mincho); color:var(--ink-soft); letter-spacing:.1em; margin-left:.15em; }
-  .balance-hero .grand-yen { font-family:var(--mono); font-size:14px; color:var(--ink-soft); margin-top:10px; }
-  .balance-list { align-self:end; }
-  .balance-list .row { display:flex; align-items:baseline; justify-content:space-between; padding:9px 2px; border-bottom:1px dotted var(--rule); gap:12px; }
-  .balance-list .row:first-child { border-top:1px solid var(--rule); }
-  .balance-list .k { font-size:14px; color:var(--ink-soft); letter-spacing:.04em; white-space:nowrap; }
-  .balance-list .v { font-size:18px; font-weight:500; }
-  .balance-list .v .note { font-family:var(--mincho); font-size:12px; color:var(--ink-soft); margin-left:8px; }
+  /* 総差枚 = 赤き真実の宣告（署名要素） */
+  .truth { position:relative; margin:8px 0 34px; padding:34px 20px 30px; text-align:center; background:linear-gradient(180deg, var(--panel-2), var(--panel)); border:1px solid var(--edge); overflow:hidden; }
+  .truth .circle { position:absolute; top:50%; left:50%; width:340px; height:340px; transform:translate(-50%,-50%); opacity:.10; pointer-events:none; }
+  .truth .corner { position:absolute; width:20px; height:20px; border:2px solid var(--gold); }
+  .truth .corner.tl { top:8px; left:8px; border-right:none; border-bottom:none; }
+  .truth .corner.tr { top:8px; right:8px; border-left:none; border-bottom:none; }
+  .truth .corner.bl { bottom:8px; left:8px; border-right:none; border-top:none; }
+  .truth .corner.br { bottom:8px; right:8px; border-left:none; border-top:none; }
+  .truth .seal { position:absolute; top:14px; right:16px; font-family:var(--jp); font-size:11px; letter-spacing:.3em; color:var(--truth); writing-mode:vertical-rl; opacity:.75; }
+  .truth .cap { position:relative; font-family:var(--cinzel); font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--ash); margin-bottom:6px; }
+  .truth .grand { position:relative; font-family:var(--cinzel); font-weight:700; font-size:clamp(54px,15vw,84px); line-height:1; color:var(--gold-lit); text-shadow:0 0 26px rgba(236,202,121,.5), 0 0 6px rgba(236,202,121,.4); }
+  .truth .grand.minus { color:var(--truth-lit); text-shadow:0 0 26px rgba(255,59,70,.55), 0 0 6px rgba(255,59,70,.5); }
+  .truth .grand .unit { font-family:var(--jp); font-size:.24em; font-weight:400; color:var(--ash); letter-spacing:.1em; margin-left:.16em; text-shadow:none; vertical-align:.15em; }
+  .truth .grand-yen { position:relative; font-family:var(--mono); font-size:13px; color:var(--ash); margin-top:14px; letter-spacing:.02em; }
 
-  .chap { display:flex; align-items:baseline; gap:14px; margin:0 0 20px; padding-bottom:8px; border-bottom:1px solid var(--ink); }
-  .chap .no { font-family:var(--serif); font-style:italic; font-size:20px; color:var(--oxblood); }
-  .chap h2 { font-family:var(--mincho); font-weight:700; font-size:19px; letter-spacing:.1em; }
-  .chap .en { margin-left:auto; font-family:var(--serif); font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-soft); }
-  .section { margin-bottom:56px; }
+  /* 副次指標 */
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--edge); border:1px solid var(--edge); margin-bottom:44px; }
+  .stat { background:var(--panel); padding:16px 16px; }
+  .stat .k { font-family:var(--cinzel); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ash); }
+  .stat .v { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:22px; color:var(--bone); margin-top:5px; line-height:1.1; }
+  .stat .v .note { font-family:var(--jp); font-size:11px; color:var(--ash-dim); margin-left:7px; }
 
-  /* ── カレンダー ── */
-  .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .cal-title { font-family:var(--serif); font-size:22px; font-weight:600; letter-spacing:.02em; }
-  .cal-title .fig { font-size:22px; }
-  .cal-nav { display:flex; gap:8px; }
-  .cal-nav button { padding:5px 14px; background:transparent; border:1px solid var(--rule); color:var(--ink); font-family:var(--mono); }
-  .cal-nav button:hover { border-color:var(--oxblood); color:var(--oxblood); }
-  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); border:1px solid var(--ink); border-bottom:none; background:var(--paper-lit); }
-  .cal-dow { text-align:center; font-family:var(--serif); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); padding:8px 0; border-bottom:2px solid var(--ink); background:var(--paper-edge); }
-  .cal-dow.sun { color:var(--oxblood); }
-  .cal-cell { min-height:74px; border-bottom:1px solid var(--rule-soft); border-right:1px solid var(--rule-soft); padding:6px 8px; position:relative; cursor:pointer; transition:background .15s; display:flex; flex-direction:column; }
+  /* 章見出し */
+  .chap { display:flex; align-items:center; gap:12px; margin:0 0 20px; }
+  .chap .mark { width:8px; height:8px; background:var(--truth); transform:rotate(45deg); box-shadow:0 0 8px rgba(216,32,44,.6); flex:none; }
+  .chap h2 { font-family:var(--jp); font-weight:700; font-size:18px; letter-spacing:.12em; color:var(--gold-lit); }
+  .chap .en { margin-left:auto; font-family:var(--cinzel); font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--ash-dim); }
+  .section { margin-bottom:52px; }
+
+  /* カレンダー */
+  .cal-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .cal-title { font-family:var(--serif); font-size:23px; font-weight:600; color:var(--bone); }
+  .cal-title .fig { font-size:23px; color:var(--gold-lit); }
+  .cal-nav { display:flex; gap:6px; }
+  .cal-nav button { min-height:38px; padding:6px 12px; background:transparent; border:1px solid var(--edge); color:var(--ash); font-family:var(--mono); font-size:12px; }
+  .cal-nav button:hover { border-color:var(--gold-deep); color:var(--gold-lit); }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); border:1px solid var(--edge); border-bottom:none; background:var(--panel); }
+  .cal-dow { text-align:center; font-family:var(--cinzel); font-size:10px; letter-spacing:.1em; color:var(--ash); padding:9px 0; border-bottom:1px solid var(--edge); background:var(--panel-2); }
+  .cal-dow.sun { color:var(--truth); } .cal-dow.sat { color:var(--blue); }
+  .cal-cell { min-height:60px; border-bottom:1px solid var(--edge-soft); border-right:1px solid var(--edge-soft); padding:5px 6px 6px; position:relative; cursor:pointer; transition:background .15s; display:flex; flex-direction:column; }
   .cal-cell:nth-child(7n) { border-right:none; }
-  .cal-cell.blank { cursor:default; background:rgba(120,90,50,.03); }
-  .cal-cell:not(.blank):hover { background:rgba(184,147,63,.12); }
-  .cal-cell .d { font-family:var(--mono); font-size:12px; color:var(--ink-soft); }
-  .cal-cell.today .d { color:var(--paper-lit); background:var(--ink); border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; }
-  .cal-cell .amt { margin-top:auto; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:13px; font-weight:500; text-align:right; }
-  .cal-cell .cnt { position:absolute; top:7px; right:8px; font-family:var(--mono); font-size:10px; color:var(--ink-soft); }
-  .cal-cell.win  { background:rgba(60,90,69,.12); }
-  .cal-cell.lose { background:rgba(124,45,41,.10); }
-  .cal-cell.win:hover  { background:rgba(60,90,69,.2); }
-  .cal-cell.lose:hover { background:rgba(124,45,41,.18); }
-  .cal-legend { margin-top:10px; font-family:var(--serif); font-size:12.5px; color:var(--ink-soft); display:flex; gap:18px; flex-wrap:wrap; }
-  .cal-legend .sw { display:inline-block; width:11px; height:11px; margin-right:5px; vertical-align:-1px; border:1px solid var(--rule); }
-  .cal-legend .sw.win { background:rgba(60,90,69,.35); } .cal-legend .sw.lose { background:rgba(124,45,41,.3); }
+  .cal-cell.blank { cursor:default; background:rgba(0,0,0,.15); }
+  .cal-cell:not(.blank):hover { background:rgba(184,147,74,.10); }
+  .cal-cell .d { font-family:var(--mono); font-size:12px; color:var(--ash); }
+  .cal-cell.today .d { color:#241109; background:var(--gold-lit); border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-weight:500; box-shadow:0 0 10px rgba(236,202,121,.6); }
+  .cal-cell .amt { margin-top:auto; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; font-weight:500; text-align:right; }
+  .cal-cell .cnt { position:absolute; top:6px; right:7px; font-family:var(--mono); font-size:9px; color:var(--ash-dim); }
+  .cal-cell.win  { background:rgba(184,147,74,.10); }
+  .cal-cell.lose { background:rgba(216,32,44,.10); }
+  .cal-cell.win:hover  { background:rgba(184,147,74,.2); }
+  .cal-cell.lose:hover { background:rgba(216,32,44,.2); }
+  .cal-cell.win .amt { color:var(--gold-lit); } .cal-cell.lose .amt { color:var(--truth-lit); }
+  .cal-legend { margin-top:12px; font-family:var(--serif); font-style:italic; font-size:13.5px; color:var(--ash); display:flex; gap:18px; flex-wrap:wrap; }
+  .cal-legend .sw { display:inline-block; width:11px; height:11px; margin-right:6px; vertical-align:-1px; border:1px solid var(--edge); }
+  .cal-legend .sw.win { background:rgba(184,147,74,.4); } .cal-legend .sw.lose { background:rgba(216,32,44,.35); }
 
-  .entry-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:18px 22px; margin-bottom:22px; }
-  .field label { display:block; font-size:12px; color:var(--ink-soft); letter-spacing:.06em; margin-bottom:6px; }
-  .field input, .field select { width:100%; padding:9px 2px; background:transparent; border:none; border-bottom:1.5px solid var(--rule); color:var(--ink); font-family:var(--mono); font-size:15px; border-radius:0; transition:border-color .2s; }
-  .field input::placeholder { color:#a89a7d; }
-  .field input:focus, .field select:focus { outline:none; border-bottom-color:var(--oxblood); }
-  .field select { font-family:var(--mincho); }
+  /* 記入フォーム */
+  .entry-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 16px; margin-bottom:22px; }
+  .field label { display:block; font-family:var(--cinzel); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin-bottom:7px; }
+  .field input, .field select { width:100%; padding:11px 12px; background:var(--void); border:1px solid var(--edge); color:var(--bone); font-family:var(--mono); font-size:16px; border-radius:2px; transition:border-color .2s, box-shadow .2s; }
+  .field input::placeholder { color:var(--ash-dim); }
+  .field input:focus, .field select:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,147,74,.13); }
+  .field select { font-family:var(--jp); }
   .field.wide { grid-column:1/-1; }
   .btn-row { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
   #cancelEditBtn { display:none; }
 
-  .chart-tabs { display:flex; gap:4px; margin-bottom:18px; flex-wrap:wrap; }
-  .chart-tabs button { padding:6px 4px; margin-right:18px; font-family:var(--serif); font-size:15px; background:none; border:none; border-bottom:2px solid transparent; color:var(--ink-soft); border-radius:0; }
-  .chart-tabs button:hover { color:var(--ink); }
-  .chart-tabs button.active { color:var(--ink); border-bottom-color:var(--oxblood); }
-  .chart-frame { border:1px solid var(--rule); background:var(--paper-lit); padding:18px 16px 10px; }
-  .chart-wrap { position:relative; height:320px; }
+  /* 図表 */
+  .chart-tabs { display:flex; gap:2px; margin-bottom:16px; flex-wrap:wrap; }
+  .chart-tabs button { min-height:40px; padding:8px 12px; font-family:var(--jp); font-size:13px; background:transparent; border:1px solid var(--edge); border-radius:2px; color:var(--ash); }
+  .chart-tabs button:hover { color:var(--gold-lit); border-color:var(--gold-deep); }
+  .chart-tabs button.active { color:#241109; background:var(--gold); border-color:var(--gold); font-weight:600; }
+  .chart-frame { border:1px solid var(--edge); background:var(--panel); padding:16px 12px 8px; }
+  .chart-wrap { position:relative; height:300px; }
 
-  .register-scroll { overflow-x:auto; border:1px solid var(--ink); }
-  table { width:100%; border-collapse:collapse; font-size:14px; white-space:nowrap; background:var(--paper-lit); }
-  thead th { font-family:var(--serif); font-size:13px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink); text-align:right; padding:12px 16px; border-bottom:2px solid var(--ink); background:var(--paper-edge); }
+  /* 台帳 */
+  .register-scroll { overflow-x:auto; border:1px solid var(--edge); }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; white-space:nowrap; background:var(--panel); }
+  thead th { font-family:var(--cinzel); font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); text-align:right; padding:12px 14px; border-bottom:1px solid var(--edge); background:var(--panel-2); }
   thead th:first-child { text-align:left; }
-  tbody td { padding:11px 16px; text-align:right; border-bottom:1px solid var(--rule-soft); font-family:var(--mono); font-variant-numeric:tabular-nums; }
-  tbody td:first-child, thead th:first-child { text-align:left; font-family:var(--mincho); box-shadow:inset 3px 0 0 -1px var(--oxblood); padding-left:20px; }
-  tbody tr:nth-child(even) td { background:rgba(120,90,50,.045); }
-  tbody tr:hover td { background:rgba(124,45,41,.06); }
-  td.amt.plus { color:var(--ledger); } td.amt.minus { color:var(--oxblood); }
-  td .memo { font-family:var(--mincho); color:var(--ink-soft); font-size:12.5px; }
+  tbody td { padding:11px 14px; text-align:right; border-bottom:1px solid var(--edge-soft); font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--bone); }
+  tbody td:first-child { text-align:left; font-family:var(--jp); box-shadow:inset 3px 0 0 -1px var(--truth); padding-left:18px; color:var(--bone); }
+  tbody tr:nth-child(even) td { background:rgba(255,255,255,.02); }
+  tbody tr:hover td { background:rgba(184,147,74,.06); }
+  td.amt.plus { color:var(--gold-lit); } td.amt.minus { color:var(--truth-lit); }
+  td .memo { font-family:var(--jp); color:var(--ash); font-size:12.5px; }
   .row-actions { text-align:right; }
-  .row-actions button { font-family:var(--mincho); padding:3px 9px; font-size:12px; margin-left:6px; background:none; border:1px solid var(--rule); color:var(--ink-soft); }
-  .row-actions button:hover { border-color:var(--oxblood); color:var(--oxblood); }
-  .empty { text-align:center; font-family:var(--serif); font-style:italic; font-size:16px; color:var(--ink-soft); padding:40px 20px; background:var(--paper-lit); border:1px solid var(--ink); border-top:none; }
+  .row-actions button { font-family:var(--jp); min-height:34px; padding:5px 11px; font-size:12px; margin-left:6px; background:transparent; border:1px solid var(--edge); color:var(--ash); }
+  .row-actions button:hover { border-color:var(--gold-deep); color:var(--gold-lit); }
+  .empty { text-align:center; font-family:var(--serif); font-style:italic; font-size:16px; color:var(--ash); padding:38px 20px; background:var(--panel); border:1px solid var(--edge); border-top:none; }
   .archive-tools { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; align-items:center; }
 
-  .migrate-note { margin:18px 0 0; padding:12px 16px; background:rgba(184,147,63,.12); border:1px solid var(--gold); font-size:13px; color:var(--ink); display:none; align-items:center; gap:14px; flex-wrap:wrap; }
+  .migrate-note { margin:0 0 30px; padding:14px 16px; background:rgba(184,147,74,.1); border:1px solid var(--gold-deep); font-size:13px; color:var(--bone); display:none; align-items:center; gap:12px; flex-wrap:wrap; }
   .migrate-note.show { display:flex; }
+  .migrate-note b { color:var(--gold-lit); }
 
-  footer { margin-top:60px; padding-top:18px; border-top:1px solid var(--rule); text-align:center; font-family:var(--serif); font-size:12.5px; color:var(--ink-soft); line-height:1.9; }
+  footer { margin-top:56px; padding-top:20px; border-top:1px solid var(--edge-soft); text-align:center; font-family:var(--serif); font-style:italic; font-size:13px; color:var(--ash-dim); line-height:1.9; }
 
-  /* トースト */
-  #toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper-lit); font-family:var(--mincho); font-size:13.5px; padding:11px 22px; border-radius:2px; box-shadow:0 12px 30px -12px rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:99; max-width:88vw; }
+  #toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--raise); color:var(--bone); font-family:var(--jp); font-size:13.5px; padding:12px 22px; border:1px solid var(--gold-deep); border-radius:2px; box-shadow:0 16px 40px -16px #000; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:99; max-width:88vw; }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-  #toast.err { background:var(--oxblood); }
+  #toast.err { border-color:var(--truth); color:var(--truth-lit); }
 
-  /* 紙の繊維（背景の豊かさ・単色からの脱却） */
-  .grain { position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.05; mix-blend-mode:multiply;
+  /* 羊皮紙の繊維に代わる、闇の質感 */
+  .grain { position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.045;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-  /* 段階的な入場（ページロードの演出）。rAFが止まる環境でも .revealed で必ず表示される */
+  /* 段階的な入場（rAF凍結時も .revealed で必ず表示） */
   @keyframes riseIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
   .js #app.revealing .reveal { opacity:0; animation:riseIn .55s cubic-bezier(.2,.7,.3,1) forwards; animation-delay:calc(var(--i,0)*70ms); }
   .js #app.revealed .reveal { opacity:1 !important; transform:none !important; animation:none !important; }
   @media (prefers-reduced-motion:reduce){ .js #app.revealing .reveal, .js #app.revealed .reveal { opacity:1 !important; transform:none !important; animation:none !important; } }
 
-  /* 黄金の蝶（署名の象徴） */
-  .butterfly { display:block; margin-left:auto; margin-bottom:8px; transform-origin:center; animation:flutter 6s ease-in-out infinite; }
-  @keyframes flutter { 0%,100%{ transform:translateY(0) rotate(-1deg); } 50%{ transform:translateY(-5px) rotate(1deg); } }
-  @media (prefers-reduced-motion:reduce){ .butterfly { animation:none; } }
+  /* 黄金の蝶 */
+  .butterfly { display:block; margin:0 auto; transform-origin:center; animation:flutter 6s ease-in-out infinite; }
+  @keyframes flutter { 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-5px) rotate(2deg); } }
+  @media (prefers-reduced-motion:reduce){ .butterfly, .truth .circle { animation:none; } }
+  .truth .circle { animation:spin 90s linear infinite; }
+  @keyframes spin { to { transform:translate(-50%,-50%) rotate(360deg); } }
 
   [hidden] { display:none !important; }
   @media (prefers-reduced-motion:reduce){ .sheet{ animation:none; opacity:1; } }
-  @media (max-width:680px){
-    .ledger-balance { grid-template-columns:1fr; gap:22px; }
-    .sheet { padding:0 18px 60px; }
-    .cal-cell { min-height:56px; padding:4px 5px; }
-    .cal-cell .amt { font-size:11px; }
+
+  /* ── スマホ最適化 ── */
+  @media (max-width:560px){
+    .sheet { padding:0 15px 80px; }
+    .stats { grid-template-columns:1fr 1fr; }
+    .truth { padding:30px 16px 26px; }
+    .cal-cell { min-height:52px; }
+    .cal-cell .amt { font-size:10px; }
+    .cal-cell .d { font-size:11px; }
+
+    /* 台帳: 横スクロール表 → 縦カード */
+    .register-scroll { border:none; overflow:visible; }
+    table, tbody, tr, td { display:block; width:100%; }
+    thead { display:none; }
+    tbody tr { border:1px solid var(--edge); background:var(--panel); margin-bottom:12px; box-shadow:inset 3px 0 0 var(--truth); }
+    tbody tr:nth-child(even) td { background:none; }
+    tbody tr:hover td { background:none; }
+    tbody td { display:flex; justify-content:space-between; align-items:baseline; text-align:right; border:none; border-bottom:1px dotted var(--edge-soft); padding:9px 15px; box-shadow:none; white-space:normal; }
+    tbody td:last-child { border-bottom:none; }
+    tbody td::before { content:attr(data-label); font-family:var(--jp); color:var(--ash); font-size:12px; letter-spacing:.04em; text-align:left; margin-right:12px; }
+    tbody td:first-child { box-shadow:none; padding-left:15px; font-size:15px; color:var(--gold-lit); font-weight:600; background:var(--panel-2); }
+    tbody td:first-child::before { content:"実戦日"; color:var(--gold-deep); }
+    tbody td.row-actions { justify-content:flex-end; }
+    tbody td.row-actions::before { content:none; }
+    .cal-legend { font-size:12.5px; gap:12px; }
   }
 </style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
 
-<!-- ═══ ① 接続設定ゲート ═══ -->
+<!-- 共通で使う紋章（黄金の召喚陣） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="sigil">
+      <g fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="50" cy="50" r="48"/>
+        <circle cx="50" cy="50" r="41" stroke-dasharray="1.2 5"/>
+        <circle cx="50" cy="50" r="34"/>
+        <path d="M50 5 L84 50 L50 95 L16 50 Z"/>
+        <path d="M20 20 L80 80 M80 20 L20 80" opacity=".55"/>
+        <circle cx="50" cy="50" r="13"/>
+        <circle cx="50" cy="50" r="4" fill="currentColor" stroke="none"/>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<!-- ① 接続設定ゲート（共有バックエンドでは通常出ません） -->
 <div class="gate" id="setupGate" hidden>
   <div class="gate-card">
+    <svg class="gate-emblem" viewBox="0 0 100 100" width="52" height="52" style="color:var(--gold)"><use href="#sigil"/></svg>
     <div class="over">First,</div>
     <h1>接続の設定</h1>
     <div class="sub">Connect Supabase</div>
-    <p class="lede">この帳簿はあなた専用のSupabaseに記録を保管します。<br>プロジェクトの <b>URL</b> と <b>anon key</b> を貼り付けてください（一度きり・この端末に保存されます）。</p>
+    <p class="lede">記録を保管するSupabaseの <b>URL</b> と <b>anon key</b> を貼り付けてください（一度きり・この端末に保存）。</p>
     <div class="gate-field">
       <label>Project URL</label>
-      <input type="url" id="cfgUrl" placeholder="https://gviyitlttafiucaihpqp.supabase.co" autocomplete="off">
+      <input type="url" id="cfgUrl" placeholder="https://xxxx.supabase.co" autocomplete="off">
     </div>
     <div class="gate-field">
       <label>anon public key</label>
-      <input type="text" id="cfgKey" placeholder="sb_publishable_vAgyLm0Lwbr8oDRQkaHGNg_cmzLoMy9" autocomplete="off">
+      <input type="text" id="cfgKey" placeholder="sb_publishable_..." autocomplete="off">
     </div>
     <div class="gate-actions">
       <button class="btn-primary" id="cfgSave">保存して進む</button>
       <button class="btn-quiet" id="cfgLocal">登録せずこの端末だけで使う</button>
     </div>
     <div class="gate-msg" id="cfgMsg"></div>
-    <details class="gate-help">
-      <summary>URL / anon key はどこにある？</summary>
-      <p>Supabase（無料）でプロジェクトを作成 → 左メニュー <code>Project Settings</code> → <code>API</code>。<br>
-      「Project URL」と「Project API keys」の <code>anon public</code> をコピー。<br>
-      さらに初回のみ、<code>SQL Editor</code> にテーブル作成SQL（別途お渡し）を貼って実行してください。</p>
-    </details>
   </div>
 </div>
 
-<!-- ═══ ② 認証ゲート ═══ -->
+<!-- ② 認証ゲート -->
 <div class="gate" id="authGate" hidden>
   <div class="gate-card">
+    <svg class="gate-emblem" viewBox="0 0 100 100" width="56" height="56" style="color:var(--gold-lit)"><use href="#sigil"/></svg>
     <div class="over">Beatrice&rsquo;s</div>
     <h1>黄金郷の家計簿</h1>
     <div class="sub" id="authSub">Sign in</div>
@@ -256,90 +319,75 @@
       </div>
     </form>
     <div class="gate-msg" id="authMsg"></div>
-    <div class="gate-switch" id="authSwitch">
-      はじめての方は <a id="toRegister">アカウント登録</a>
-    </div>
+    <div class="gate-switch" id="authSwitch">はじめての方は <a id="toRegister">アカウント登録</a></div>
   </div>
 </div>
 
-<!-- ═══ ③ 帳簿本体 ═══ -->
+<!-- ③ 帳簿本体 -->
 <main class="sheet" id="app" hidden>
   <div class="userbar reveal">
     <span class="who" id="whoami"></span>
-    <button class="btn-quiet" id="logoutBtn">退帳（ログアウト）</button>
+    <button class="btn-quiet" id="logoutBtn">退帳</button>
   </div>
 
   <header class="masthead reveal">
-    <div class="brand">
-      <div class="over">Beatrice&rsquo;s</div>
-      <h1>黄金郷の家計簿</h1>
-      <div class="sub">Ledger of the Golden Witch &middot; Umineko 2</div>
-    </div>
-    <div class="colophon">
-      <svg class="butterfly" viewBox="0 0 64 64" width="48" height="48" aria-hidden="true">
-        <g stroke="#b8933f" stroke-width="1.3" fill="rgba(184,147,63,.12)" stroke-linejoin="round">
-          <path d="M32 23 C25 11 11 9 9 21 C8 30 21 31 32 33 Z"/>
-          <path d="M32 23 C39 11 53 9 55 21 C56 30 43 31 32 33 Z"/>
-          <path d="M32 33 C25 35 14 39 17 48 C19 55 30 50 32 42 Z"/>
-          <path d="M32 33 C39 35 50 39 47 48 C45 55 34 50 32 42 Z"/>
-        </g>
-        <line x1="32" y1="21" x2="32" y2="44" stroke="#9a7a2e" stroke-width="1.7" stroke-linecap="round"/>
-        <circle cx="32" cy="20" r="2" fill="#9a7a2e"/>
-        <path d="M32 20 C30 14 27 13 24 12 M32 20 C34 14 37 13 40 12" stroke="#9a7a2e" stroke-width="1" fill="none" stroke-linecap="round"/>
-      </svg>
-      差枚・回転数・ビタ押しの記録<br><span class="seal">魔女の署名</span>
-    </div>
+    <svg class="crest" viewBox="0 0 100 100" width="60" height="60" style="color:var(--gold)"><use href="#sigil"/></svg>
+    <div class="over">Beatrice&rsquo;s</div>
+    <h1>黄金郷の家計簿</h1>
+    <div class="sub">The Golden Witch&rsquo;s Ledger &middot; Umineko 2</div>
+    <div class="rule"><span class="lozenge"></span></div>
   </header>
 
-  <section class="ledger-balance reveal">
-    <div class="balance-hero">
-      <div class="cap">Net &mdash; 総差枚</div>
-      <div class="grand fig" id="sumDiff">±0<span class="unit">枚</span></div>
-      <div class="grand-yen" id="sumDiffYen"></div>
-    </div>
-    <div class="balance-list">
-      <div class="row"><span class="k">勝率</span><span class="v fig" id="winRate">—</span></div>
-      <div class="row"><span class="k">総回転数</span><span class="v fig" id="sumGames">0<span class="note">G</span></span></div>
-      <div class="row"><span class="k">ビタ成功率</span><span class="v fig" id="bitaRate">—</span></div>
-      <div class="row"><span class="k">平均差枚 / 日</span><span class="v fig" id="avgDiff">—</span></div>
-    </div>
+  <!-- 総差枚 = 赤き真実 -->
+  <section class="truth reveal">
+    <svg class="circle" viewBox="0 0 100 100" style="color:var(--gold)" aria-hidden="true"><use href="#sigil"/></svg>
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <span class="seal">真実</span>
+    <div class="cap">Net &middot; 総差枚</div>
+    <div class="grand" id="sumDiff">±0<span class="unit">枚</span></div>
+    <div class="grand-yen" id="sumDiffYen"></div>
   </section>
 
-  <div class="migrate-note" id="migrateNote">
-    <span>この端末に未同期のローカル記録が <b id="migCount">0</b> 件あります。クラウドへ移しますか？</span>
+  <div class="stats reveal">
+    <div class="stat"><div class="k">勝率 / Win</div><div class="v" id="winRate">—</div></div>
+    <div class="stat"><div class="k">総回転 / Games</div><div class="v" id="sumGames">0<span class="note">G</span></div></div>
+    <div class="stat"><div class="k">ビタ成功率 / Bita</div><div class="v" id="bitaRate">—</div></div>
+    <div class="stat"><div class="k">日平均 / Avg</div><div class="v" id="avgDiff">—</div></div>
+  </div>
+
+  <div class="migrate-note reveal" id="migrateNote">
+    <span>この端末に未同期の記録が <b id="migCount">0</b> 件あります。クラウドへ移しますか？</span>
     <button class="btn-quiet" id="migrateBtn">クラウドへ移行</button>
     <button class="btn-quiet" id="migrateDismiss">あとで</button>
   </div>
 
   <!-- 暦 -->
   <section class="section reveal">
-    <div class="chap"><span class="no">I.</span><h2>暦（こよみ）</h2><span class="en">Calendar</span></div>
+    <div class="chap"><span class="mark"></span><h2>暦</h2><span class="en">Calendar</span></div>
     <div class="cal-head">
       <div class="cal-title"><span class="fig" id="calYear"></span>年 <span id="calMonth"></span>月</div>
       <div class="cal-nav">
-        <button id="calPrev" aria-label="前の月">‹ 前月</button>
+        <button id="calPrev" aria-label="前の月">‹</button>
         <button id="calToday">今月</button>
-        <button id="calNext" aria-label="次の月">次月 ›</button>
+        <button id="calNext" aria-label="次の月">›</button>
       </div>
     </div>
     <div class="cal-grid" id="calGrid"></div>
     <div class="cal-legend">
-      <span><span class="sw win"></span>勝ち（差枚プラス）</span>
-      <span><span class="sw lose"></span>負け（差枚マイナス）</span>
-      <span>日付をクリックすると、その日で記入できます</span>
+      <span><span class="sw win"></span>勝ち</span>
+      <span><span class="sw lose"></span>負け</span>
+      <span>日付を選ぶとその日で記入</span>
     </div>
   </section>
 
   <!-- 記入 -->
   <section class="section reveal">
-    <div class="chap"><span class="no">II.</span><h2 id="formTitle">実戦を記入する</h2><span class="en">Entry</span></div>
+    <div class="chap"><span class="mark"></span><h2 id="formTitle">実戦を記入する</h2><span class="en">Entry</span></div>
     <form id="recordForm">
       <div class="entry-grid">
         <div class="field"><label>日付</label><input type="date" id="fDate" required></div>
-        <div class="field"><label>差枚（負は −）</label><input type="number" id="fDiff" step="1" placeholder="+1500 / -800" required></div>
-        <div class="field"><label>回転数 G</label><input type="number" id="fGames" min="0" step="1" placeholder="4500"></div>
-        <div class="field"><label>ビタ試行</label><input type="number" id="fBitaTry" min="0" step="1" placeholder="20"></div>
-        <div class="field"><label>ビタ成功</label><input type="number" id="fBitaHit" min="0" step="1" placeholder="17"></div>
+        <div class="field"><label>差枚（負は −）</label><input type="number" id="fDiff" step="1" inputmode="numeric" placeholder="+1500 / -800" required></div>
+        <div class="field"><label>回転数 G</label><input type="number" id="fGames" min="0" step="1" inputmode="numeric" placeholder="4500"></div>
         <div class="field"><label>推測設定</label>
           <select id="fSetting">
             <option value="">不明</option>
@@ -347,6 +395,8 @@
             <option value="4">設定4</option><option value="5">設定5</option><option value="6">設定6</option>
           </select>
         </div>
+        <div class="field"><label>ビタ試行</label><input type="number" id="fBitaTry" min="0" step="1" inputmode="numeric" placeholder="20"></div>
+        <div class="field"><label>ビタ成功</label><input type="number" id="fBitaHit" min="0" step="1" inputmode="numeric" placeholder="17"></div>
         <div class="field wide"><label>覚書（店・台番・展開）</label><input type="text" id="fMemo" placeholder="○○ホール 138番台 / 黄金の夜明けまで到達"></div>
       </div>
       <div class="btn-row">
@@ -358,7 +408,7 @@
 
   <!-- 図表 -->
   <section class="section reveal">
-    <div class="chap"><span class="no">III.</span><h2>推移を読む</h2><span class="en">Charts</span></div>
+    <div class="chap"><span class="mark"></span><h2>推移を読む</h2><span class="en">Charts</span></div>
     <div class="chart-tabs">
       <button data-chart="cumulative" class="active">累計差枚</button>
       <button data-chart="daily">日別差枚</button>
@@ -370,14 +420,14 @@
 
   <!-- 台帳 -->
   <section class="section reveal">
-    <div class="chap"><span class="no">IV.</span><h2>実戦台帳</h2><span class="en">Register</span></div>
+    <div class="chap"><span class="mark"></span><h2>実戦台帳</h2><span class="en">Register</span></div>
     <div class="register-scroll">
       <table>
         <thead><tr><th>日付</th><th>差枚</th><th>回転</th><th>ビタ</th><th>成功率</th><th>設定</th><th>覚書</th><th></th></tr></thead>
         <tbody id="historyBody"></tbody>
       </table>
     </div>
-    <div class="empty" id="emptyMsg">まだ何も記されていない。上の欄から最初の一戦を記入する。</div>
+    <div class="empty" id="emptyMsg">まだ何も記されていない。最初の一戦を記入せよ。</div>
     <div class="archive-tools">
       <button type="button" class="btn-quiet" id="exportCsvBtn">CSVで写す</button>
       <button type="button" class="btn-quiet" id="exportJsonBtn">JSONで封じる</button>
@@ -386,10 +436,7 @@
     </div>
   </section>
 
-  <footer id="footNote">
-    クラウド（Supabase）に保管中。どの端末からでも同じアカウントで開帳できます。<br>
-    「JSONで封じる」で手元の写しも取れます。
-  </footer>
+  <footer id="footNote">クラウドに保管中。どの端末からでも同じ帳簿を開けます。</footer>
 </main>
 
 <div id="toast"></div>
@@ -407,16 +454,16 @@
   const HARD_URL = "https://gviyitlttafiucaihpqp.supabase.co";
   const HARD_KEY = "sb_publishable_vAgyLm0Lwbr8oDRQkaHGNg_cmzLoMy9";
 
-  let sb = null;          // supabase client
-  let user = null;        // 認証ユーザー
-  let records = [];       // メモリ上のキャッシュ（アプリ内shape）
-  let store = null;       // データ層（cloud / local）
+  let sb = null;
+  let user = null;
+  let records = [];
+  let store = null;
   let editId = null;
   let currentChart = "cumulative";
   let chart = null;
   let firstPaint = true;
   const now = new Date();
-  let calYear = now.getFullYear(), calMonth = now.getMonth(); // 0-11
+  let calYear = now.getFullYear(), calMonth = now.getMonth();
 
   // ───────── 汎用 ─────────
   const fmt = n => n.toLocaleString("ja-JP");
@@ -482,17 +529,14 @@
     const items = app.querySelectorAll(".reveal");
     items.forEach((el, i) => el.style.setProperty("--i", i));
     app.classList.remove("revealed", "revealing");
-    void app.offsetWidth;               // リフローで確実に初期状態から再生
+    void app.offsetWidth;
     app.classList.add("revealing");
     clearTimeout(playReveal._t);
-    playReveal._t = setTimeout(() => app.classList.add("revealed"), 1100);  // フェイルセーフ
+    playReveal._t = setTimeout(() => app.classList.add("revealed"), 1100);
   }
 
   function boot(){
-    if (!window.supabase) { // SDK未読込（オフライン等）→ ローカルのみ
-      startLocal();
-      return;
-    }
+    if (!window.supabase) { startLocal(); return; }
     const { url, key } = getCfg();
     if (!url || !key) { show("setupGate"); return; }
     try { sb = window.supabase.createClient(url, key); }
@@ -524,7 +568,7 @@
 
   function startLocal(){
     store = Local; user = null; sb = null;
-    $("whoami").innerHTML = 'この端末のみ（未登録） <b></b>';
+    $("whoami").innerHTML = 'この端末のみ（未登録）';
     $("logoutBtn").textContent = "接続設定へ";
     $("footNote").innerHTML = "この端末（localStorage）にのみ保管中。端末を替える前に「JSONで封じる」で写しを取ってください。";
     $("migrateNote").classList.remove("show");
@@ -533,7 +577,7 @@
   }
 
   // ── 認証ゲート ──
-  let authMode = "login"; // login | register
+  let authMode = "login";
   $("toRegister").addEventListener("click", () => setAuthMode(authMode === "login" ? "register" : "login"));
   function setAuthMode(mode){
     authMode = mode; clearMsg("authMsg");
@@ -563,11 +607,10 @@
       if (authMode === "register") {
         const { data, error } = await sb.auth.signUp({ email, password: pass });
         if (error) throw error;
-        if (!data.session) { // メール確認が有効
-          setMsg("authMsg", "確認メールを送信しました。メール内のリンクを開くとログインできます。（Supabaseの Authentication → Email で確認を無効にすれば即ログインになります）", false);
+        if (!data.session) {
+          setMsg("authMsg", "確認メールを送信しました。メール内のリンクを開くとログインできます。", false);
           setAuthMode("login");
         }
-        // data.session があれば onAuthStateChange が発火してログイン
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
@@ -595,8 +638,8 @@
   async function onLogin(){
     store = Cloud;
     $("whoami").innerHTML = '開帳中 <b>' + escapeHtml(user.email || "") + '</b>';
-    $("logoutBtn").textContent = "退帳（ログアウト）";
-    $("footNote").innerHTML = "クラウド（Supabase）に保管中。どの端末からでも同じアカウントで開帳できます。<br>「JSONで封じる」で手元の写しも取れます。";
+    $("logoutBtn").textContent = "退帳";
+    $("footNote").innerHTML = "クラウドに保管中。どの端末からでも同じ帳簿を開けます。";
     show("app");
     try {
       await Cloud.fetch();
@@ -604,7 +647,6 @@
       checkMigrate();
     } catch (err) {
       toast("読み込み失敗: " + err.message, true);
-      // テーブル未作成などのヒント
       if (/relation .* does not exist|schema cache/i.test(err.message))
         toast("records テーブルが見つかりません。SQL Editor で作成SQLを実行してください。", true);
     }
@@ -614,10 +656,8 @@
   function localLegacy(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; } }
   function checkMigrate(){
     const legacy = localLegacy();
-    if (store === Cloud && legacy.length) {
-      $("migCount").textContent = legacy.length;
-      $("migrateNote").classList.add("show");
-    } else $("migrateNote").classList.remove("show");
+    if (store === Cloud && legacy.length) { $("migCount").textContent = legacy.length; $("migrateNote").classList.add("show"); }
+    else $("migrateNote").classList.remove("show");
   }
   $("migrateDismiss").addEventListener("click", () => $("migrateNote").classList.remove("show"));
   $("migrateBtn").addEventListener("click", async () => {
@@ -637,7 +677,7 @@
     } catch (err) { toast("移行失敗: " + err.message, true); }
   });
 
-  // ───────── 総差枚アニメ（唯一の演出＋フェイルセーフ） ─────────
+  // ───────── 総差枚アニメ ─────────
   function animateGrand(to){
     const el = $("sumDiff"); const unit = '<span class="unit">枚</span>';
     if (reduceMotion || !firstPaint) { el.innerHTML = fmtSigned(to) + unit; return; }
@@ -667,8 +707,8 @@
     $("sumGames").innerHTML = fmt(totalGames)+'<span class="note">G</span>';
     $("bitaRate").innerHTML = totalTry ? (totalHit/totalTry*100).toFixed(1)+'%<span class="note">'+fmt(totalHit)+"/"+fmt(totalTry)+"</span>" : "—";
     const avgEl = $("avgDiff");
-    if (days.length){ const a=Math.round(totalDiff/days.length); avgEl.textContent=fmtSigned(a); avgEl.className="v fig "+(a>0?"plus":a<0?"minus":""); }
-    else { avgEl.textContent="—"; avgEl.className="v fig"; }
+    if (days.length){ const a=Math.round(totalDiff/days.length); avgEl.innerHTML=fmtSigned(a); avgEl.className="v "+(a>0?"plus":a<0?"minus":""); }
+    else { avgEl.textContent="—"; avgEl.className="v"; }
   }
 
   // ───────── カレンダー ─────────
@@ -678,7 +718,7 @@
     $("calMonth").textContent = calMonth + 1;
     const map = byDate();
     const grid = $("calGrid"); grid.innerHTML = "";
-    DOW.forEach((d,i) => { const h=document.createElement("div"); h.className="cal-dow"+(i===0?" sun":""); h.textContent=d; grid.appendChild(h); });
+    DOW.forEach((d,i) => { const h=document.createElement("div"); h.className="cal-dow"+(i===0?" sun":i===6?" sat":""); h.textContent=d; grid.appendChild(h); });
     const first = new Date(calYear, calMonth, 1);
     const startDow = first.getDay();
     const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
@@ -688,15 +728,18 @@
       const iso = `${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
       const cell = document.createElement("div");
       cell.className = "cal-cell";
+      cell.setAttribute("role","button"); cell.tabIndex = 0;
       if (iso === today) cell.classList.add("today");
       const rec = map.get(iso);
-      if (rec){ cell.classList.add(rec.diff>=0 ? "win":"lose"); }
+      if (rec){ cell.classList.add(rec.diff>=0 ? "win":"lose"); cell.setAttribute("aria-label", `${calMonth+1}月${day}日 差枚${fmtSigned(rec.diff)}`); }
+      else cell.setAttribute("aria-label", `${calMonth+1}月${day}日`);
       cell.innerHTML = `<span class="d">${day}</span>` +
-        (rec ? `<span class="cnt">${rec.count>1?rec.count+"件":""}</span><span class="amt ${rec.diff>=0?"plus":"minus"}">${fmtSigned(rec.diff)}</span>` : "");
-      cell.addEventListener("click", () => { $("fDate").value = iso; exitEdit(); toast(shortDate(iso)+" で記入します"); $("recordForm").scrollIntoView({ behavior: reduceMotion?"auto":"smooth", block:"center" }); $("fDiff").focus({preventScroll:true}); });
+        (rec ? `<span class="cnt">${rec.count>1?rec.count+"件":""}</span><span class="amt">${fmtSigned(rec.diff)}</span>` : "");
+      const pick = () => { $("fDate").value = iso; exitEdit(); toast(shortDate(iso)+" で記入します"); $("recordForm").scrollIntoView({ behavior: reduceMotion?"auto":"smooth", block:"center" }); $("fDiff").focus({preventScroll:true}); };
+      cell.addEventListener("click", pick);
+      cell.addEventListener("keydown", e => { if (e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(); } });
       grid.appendChild(cell);
     }
-    // 末尾の空きセルで枠を揃える
     const total = startDow + daysInMonth;
     const tail = (7 - (total % 7)) % 7;
     for (let i=0;i<tail;i++){ const c=document.createElement("div"); c.className="cal-cell blank"; grid.appendChild(c); }
@@ -715,26 +758,26 @@
       const rate = r.bitaTry ? (r.bitaHit/r.bitaTry*100).toFixed(1)+"%" : "—";
       const cls = r.diff>0?"plus":r.diff<0?"minus":"";
       tr.innerHTML = `
-        <td>${r.date}</td>
-        <td class="amt ${cls}">${fmtSigned(r.diff)}</td>
-        <td>${r.games?fmt(r.games):"—"}</td>
-        <td>${r.bitaTry?`${r.bitaHit}/${r.bitaTry}`:"—"}</td>
-        <td>${rate}</td>
-        <td>${r.setting?"設定"+r.setting:"—"}</td>
-        <td style="text-align:left"><span class="memo">${escapeHtml(r.memo||"")}</span></td>
+        <td data-label="日付">${r.date}</td>
+        <td data-label="差枚" class="amt ${cls}">${fmtSigned(r.diff)}</td>
+        <td data-label="回転">${r.games?fmt(r.games):"—"}</td>
+        <td data-label="ビタ">${r.bitaTry?`${r.bitaHit}/${r.bitaTry}`:"—"}</td>
+        <td data-label="成功率">${rate}</td>
+        <td data-label="設定">${r.setting?"設定"+r.setting:"—"}</td>
+        <td data-label="覚書" style="text-align:left"><span class="memo">${escapeHtml(r.memo||"") || "—"}</span></td>
         <td class="row-actions"><button data-edit="${r.id}">直す</button><button data-del="${r.id}">消す</button></td>`;
       tbody.appendChild(tr);
     }
   }
 
   // ───────── 図表 ─────────
-  const C = { gold:"#9a7a2e", goldFoil:"#b8933f", oxblood:"#7c2d29", ledger:"#3c5a45", ink:"#2a231a", soft:"#6f6350", grid:"rgba(122,90,50,.14)" };
+  const C = { gold:"#b8934a", goldLit:"#ecca79", truth:"#d8202c", truthLit:"#ff3b46", blue:"#5f95d8", ink:"#ece2d1", soft:"#9d8f88", grid:"rgba(184,147,74,.12)" };
   if (window.Chart){ Chart.defaults.color=C.soft; Chart.defaults.font.family='"DM Mono","Shippori Mincho",monospace'; Chart.defaults.font.size=12; }
   function chartOpts(scales, tip){
     return { responsive:true, maintainAspectRatio:false,
       animation: reduceMotion?false:{ duration:650, easing:"easeOutCubic" },
       scales, plugins:{ legend:{display:false},
-        tooltip:{ backgroundColor:"#efe7d1", borderColor:C.ink, borderWidth:1, titleColor:C.ink, bodyColor:C.ink, padding:10, cornerRadius:2, displayColors:false, titleFont:{family:'"Shippori Mincho",serif'}, callbacks:{ label:c=>tip(c.parsed.y) } } } };
+        tooltip:{ backgroundColor:"#20141b", borderColor:C.gold, borderWidth:1, titleColor:C.goldLit, bodyColor:C.ink, padding:10, cornerRadius:2, displayColors:false, titleFont:{family:'"Shippori Mincho",serif'}, callbacks:{ label:c=>tip(c.parsed.y) } } } };
   }
   function renderChart(){
     if (!window.Chart) return;
@@ -744,16 +787,16 @@
     const base = { x:{grid:{color:C.grid}}, y:{grid:{color:C.grid}} };
     if (currentChart==="cumulative"){
       let cum=0; const data=days.map(d=>(cum+=d.diff));
-      chart=new Chart(ctx,{type:"line",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data,borderColor:C.goldFoil,backgroundColor:"rgba(184,147,63,.12)",fill:true,tension:.2,borderWidth:2,pointRadius:2.5,pointBackgroundColor:C.gold}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"line",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data,borderColor:C.goldLit,backgroundColor:"rgba(236,202,121,.10)",fill:true,tension:.2,borderWidth:2,pointRadius:2.5,pointBackgroundColor:C.gold}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
     } else if (currentChart==="daily"){
-      chart=new Chart(ctx,{type:"bar",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data:days.map(d=>d.diff),backgroundColor:days.map(d=>d.diff>=0?C.ledger:C.oxblood)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"bar",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data:days.map(d=>d.diff),backgroundColor:days.map(d=>d.diff>=0?C.goldLit:C.truth)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
     } else if (currentChart==="bita"){
       const wb=days.filter(d=>d.bitaTry>0);
-      chart=new Chart(ctx,{type:"line",data:{labels:wb.map(d=>shortDate(d.date)),datasets:[{data:wb.map(d=>+(d.bitaHit/d.bitaTry*100).toFixed(1)),borderColor:C.ink,backgroundColor:"rgba(42,35,26,.06)",fill:true,tension:.2,borderWidth:2,pointRadius:2.5,pointBackgroundColor:C.oxblood}]},options:chartOpts({x:{grid:{color:C.grid}},y:{grid:{color:C.grid},min:0,max:100}},v=>v+" %")});
+      chart=new Chart(ctx,{type:"line",data:{labels:wb.map(d=>shortDate(d.date)),datasets:[{data:wb.map(d=>+(d.bitaHit/d.bitaTry*100).toFixed(1)),borderColor:C.blue,backgroundColor:"rgba(95,149,216,.12)",fill:true,tension:.2,borderWidth:2,pointRadius:2.5,pointBackgroundColor:C.blue}]},options:chartOpts({x:{grid:{color:C.grid}},y:{grid:{color:C.grid},min:0,max:100}},v=>v+" %")});
     } else {
       const m=new Map(); for(const d of days){const k=d.date.slice(0,7); m.set(k,(m.get(k)||0)+d.diff);}
       const keys=[...m.keys()].sort();
-      chart=new Chart(ctx,{type:"bar",data:{labels:keys.map(k=>k.replace("-","/")),datasets:[{data:keys.map(k=>m.get(k)),backgroundColor:keys.map(k=>m.get(k)>=0?C.ledger:C.oxblood)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"bar",data:{labels:keys.map(k=>k.replace("-","/")),datasets:[{data:keys.map(k=>m.get(k)),backgroundColor:keys.map(k=>m.get(k)>=0?C.goldLit:C.truth)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
     }
   }
 
