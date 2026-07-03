@@ -165,6 +165,37 @@
     transition:background .18s,color .18s,border-color .18s;
   }
   .quick-nav a:hover, .quick-nav a:focus-visible { color:var(--gold-lit); border-color:var(--gold-deep); background:rgba(184,147,74,.10); }
+  #summary, #rangeControl, #calendar, #charts, #register { scroll-margin-top:86px; }
+
+  /* 目次が端末幅で切れないように、狭い幅では横スクロールではなく折り返して全項目を表示する */
+  @media (max-width:760px){
+    .quick-nav {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:7px;
+      justify-content:stretch;
+      align-items:stretch;
+      overflow:visible;
+      padding:10px 12px;
+    }
+    .quick-nav-label {
+      grid-column:1 / -1;
+      margin:0 0 2px;
+      text-align:center;
+    }
+    .quick-nav a {
+      width:100%;
+      min-width:0;
+      min-height:38px;
+      padding:8px 6px;
+      font-size:12px;
+      letter-spacing:.03em;
+      white-space:nowrap;
+    }
+  }
+  @media (max-width:380px){
+    .quick-nav { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  }
 
   /* 折りたたみ可能な章 */
   .section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 20px; }
@@ -454,9 +485,14 @@
   /* ── スマホ最適化 ── */
   @media (max-width:560px){
     .sheet { padding:0 15px 80px; }
-    .quick-nav { margin:0 -15px 18px; border-left:none; border-right:none; justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    .quick-nav a { flex:none; }
-    .quick-nav-label { flex:none; }
+    .quick-nav {
+      margin:0 -15px 18px;
+      border-left:none;
+      border-right:none;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+    }
+    .quick-nav a { flex:auto; }
+    .quick-nav-label { flex:auto; }
     .section-head { align-items:flex-start; flex-direction:column; gap:10px; }
     .section-head-tools { width:100%; justify-content:space-between; }
     .filter-panel { display:block; padding:14px; }
@@ -499,6 +535,10 @@
     .cal-nav button { min-height:44px; }
     .cal-legend { font-size:12.5px; gap:12px; }
   }
+  @media (max-width:380px){
+    .quick-nav { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  }
+
 </style>
 </head>
 <body>
