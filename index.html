@@ -436,6 +436,46 @@
     font-family:var(--serif); font-style:italic; font-size:15px; color:var(--ash); }
   .chart-empty.show { display:flex; }
 
+  /* ── 小役カウンター モード ── */
+  .userbar-actions { display:flex; gap:8px; }
+  .counter-mode { position:fixed; inset:0; z-index:180; background:var(--void); overflow-y:auto;
+    padding:14px 14px calc(20px + env(safe-area-inset-bottom)); display:flex; flex-direction:column;
+    background-image:radial-gradient(80% 45% at 50% -6%, rgba(120,30,40,.18), transparent 60%); }
+  .counter-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .counter-title { font-family:var(--jp); font-weight:700; font-size:19px; letter-spacing:.1em; color:var(--gold-lit); }
+  .counter-hint { font-family:var(--serif); font-style:italic; font-size:12.5px; color:var(--ash); margin-bottom:12px; line-height:1.6; }
+  .counter-games { background:var(--panel); border:1px solid var(--edge); padding:13px 15px; margin-bottom:14px; position:sticky; top:0; z-index:2; box-shadow:0 10px 26px -16px #000; }
+  .cg-label { font-family:var(--cinzel); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+  .cg-value { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:38px; line-height:1.05; color:var(--bone); margin:2px 0 10px; }
+  .cg-controls { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .cg-controls button { min-height:48px; font-family:var(--mono); font-size:15px; background:var(--void); border:1px solid var(--edge); color:var(--bone); border-radius:3px; }
+  .cg-controls button:active { transform:scale(.96); }
+  .cg-controls .cg-plus { background:linear-gradient(180deg,var(--gold-lit),var(--gold)); color:#241109; border-color:var(--gold-lit); font-weight:700; }
+  .cg-controls #cgEdit { grid-column:1/-1; font-family:var(--jp); color:var(--ash); }
+  .counter-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .koyaku { position:relative; text-align:left; min-height:84px; padding:12px 12px 10px; background:var(--panel); border:1px solid var(--edge); border-radius:4px;
+    display:flex; flex-direction:column; gap:1px; cursor:pointer; color:var(--bone); transition:background .12s, border-color .12s, transform .06s; -webkit-user-select:none; user-select:none; }
+  .koyaku:hover { border-color:var(--gold-deep); }
+  .koyaku:active { transform:scale(.98); background:rgba(184,147,74,.16); }
+  .koyaku .ky-name { font-family:var(--jp); font-size:13.5px; color:var(--gold-lit); letter-spacing:.02em; padding-right:36px; }
+  .koyaku.rare .ky-name { color:var(--truth-lit); }
+  .koyaku .ky-count { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:30px; line-height:1; margin:4px 0 2px; }
+  .koyaku .ky-obs { font-family:var(--mono); font-size:12px; color:var(--bone); }
+  .koyaku .ky-theo { font-family:var(--mono); font-size:11px; color:var(--ash-dim); }
+  .koyaku .ky-minus { position:absolute; top:8px; right:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    background:var(--void); border:1px solid var(--edge); border-radius:50%; color:var(--ash); font-size:20px; line-height:1; }
+  .koyaku .ky-minus:active { background:var(--truth); color:#fff; border-color:var(--truth); }
+  .counter-foot { display:flex; gap:10px; margin:18px 0 6px; flex-wrap:wrap; }
+  .counter-foot button { flex:1; min-width:150px; }
+  @media (min-width:560px){
+    .counter-mode { padding:22px 24px; }
+    .counter-mode > * { width:100%; max-width:760px; margin-left:auto; margin-right:auto; }
+    .counter-grid { grid-template-columns:repeat(3,1fr); }
+    .cg-controls { grid-template-columns:repeat(4,1fr) 2fr; }
+    .cg-controls #cgEdit { grid-column:auto; }
+  }
+  @media (prefers-reduced-motion:reduce){ .koyaku:active, .cg-controls button:active { transform:none; } }
+
   [hidden] { display:none !important; }
   @media (prefers-reduced-motion:reduce){ .sheet{ animation:none; opacity:1; } }
 
@@ -640,7 +680,10 @@
 <main class="sheet" id="app" hidden>
   <div class="userbar reveal">
     <span class="who" id="whoami"></span>
-    <button class="btn-quiet" id="logoutBtn">退帳</button>
+    <span class="userbar-actions">
+      <button class="btn-quiet" id="counterOpen">小役カウンター</button>
+      <button class="btn-quiet" id="logoutBtn">退帳</button>
+    </span>
   </div>
 
   <header class="masthead reveal">
@@ -832,6 +875,31 @@
 <div class="loading-veil" id="loading" hidden>
   <svg class="spin" viewBox="0 0 100 100" width="56" height="56" style="color:var(--gold)" aria-hidden="true"><use href="#sigil"/></svg>
   <span id="loadingMsg">帳簿を紐解いています…</span>
+</div>
+
+<!-- 小役カウンター モード（打ちながら計上する全画面） -->
+<div class="counter-mode" id="counterMode" hidden>
+  <div class="counter-head">
+    <div class="counter-title">小役カウンター</div>
+    <button type="button" class="btn-quiet" id="counterClose">× 台帳へ戻る</button>
+  </div>
+  <div class="counter-hint">小役が出たらカードをタップして計上。総回転数は台の値に合わせて調整。カウントは自動保存されます。</div>
+  <div class="counter-games">
+    <div class="cg-label">総回転数 G</div>
+    <div class="cg-value fig" id="cgGames">0</div>
+    <div class="cg-controls">
+      <button type="button" data-g="-1">−1</button>
+      <button type="button" data-g="1" class="cg-plus">＋1</button>
+      <button type="button" data-g="10">＋10</button>
+      <button type="button" data-g="50">＋50</button>
+      <button type="button" id="cgEdit">回転数を直接入力（台の値に合わせる）</button>
+    </div>
+  </div>
+  <div class="counter-grid" id="counterGrid"></div>
+  <div class="counter-foot">
+    <button type="button" class="btn-ghost" id="counterToLedger">この回転数を台帳の記入欄へ</button>
+    <button type="button" class="btn-quiet" id="counterReset">すべてリセット</button>
+  </div>
 </div>
 
 <script>
@@ -1494,11 +1562,101 @@
     rd.readAsText(file);
   });
 
+  // ───────── 小役カウンター ─────────
+  const KOYAKU = [
+    { key:'replay',   label:'リプレイ',          theo:'1/7.5' },
+    { key:'bell2',    label:'2択ベル',           theo:'1/4.5' },
+    { key:'bellC',    label:'共通ベル',          theo:'1/29.4〜21.0' },
+    { key:'ichiA',    label:'1枚役A',            theo:'1/130.5' },
+    { key:'ichiB',    label:'1枚役B',            theo:'1/102.1〜100.4' },
+    { key:'ichiC',    label:'1枚役C',            theo:'1/114.2〜111.5' },
+    { key:'suikaA',   label:'スイカA',           theo:'1/161.4' },
+    { key:'suikaB',   label:'スイカB',           theo:'1/250.1' },
+    { key:'cherry',   label:'チェリー',          theo:'1/287.4' },
+    { key:'kakuteiA', label:'確定役A',           theo:'1/16384〜7281.8', rare:true },
+    { key:'kakuteiB', label:'確定役B',           theo:'1/8192.0', rare:true },
+    { key:'reachA',   label:'リーチ目リプレイA',  theo:'1/16384', rare:true },
+    { key:'reachB',   label:'リーチ目リプレイB',  theo:'1/16384', rare:true },
+    { key:'reachC',   label:'リーチ目リプレイC',  theo:'1/16384', rare:true },
+  ];
+  const CNT_KEY = "umineko2_counter_v1";
+  let counter = (() => { try { const c = JSON.parse(localStorage.getItem(CNT_KEY) || "{}"); return { games: c.games|0, counts: c.counts || {} }; } catch { return { games:0, counts:{} }; } })();
+  function saveCounter(){ localStorage.setItem(CNT_KEY, JSON.stringify(counter)); }
+  function buildCounterGrid(){
+    const grid = $("counterGrid"); grid.innerHTML = "";
+    for (const k of KOYAKU){
+      const el = document.createElement("div");
+      el.className = "koyaku" + (k.rare ? " rare" : "");
+      el.dataset.key = k.key; el.setAttribute("role","button"); el.tabIndex = 0;
+      el.setAttribute("aria-label", k.label + " を1加算");
+      el.innerHTML =
+        `<span class="ky-name">${k.label}</span>` +
+        `<span class="ky-count fig" data-count="${k.key}">0</span>` +
+        `<span class="ky-obs" data-obs="${k.key}">実 —</span>` +
+        `<span class="ky-theo">理 ${k.theo}</span>` +
+        `<span class="ky-minus" data-minus="${k.key}" role="button" aria-label="${k.label} を1減算">−</span>`;
+      grid.appendChild(el);
+    }
+  }
+  function renderCounter(){
+    $("cgGames").textContent = fmt(counter.games);
+    for (const k of KOYAKU){
+      const n = counter.counts[k.key] | 0;
+      const cEl = document.querySelector(`[data-count="${k.key}"]`);
+      const oEl = document.querySelector(`[data-obs="${k.key}"]`);
+      if (cEl) cEl.textContent = fmt(n);
+      if (oEl) oEl.textContent = (n>0 && counter.games>0) ? `実 1/${(counter.games/n).toFixed(1)}` : "実 —";
+    }
+  }
+  function bump(key, delta){ counter.counts[key] = Math.max(0, (counter.counts[key]|0) + delta); saveCounter(); renderCounter(); }
+  function bumpGames(delta){ counter.games = Math.max(0, counter.games + delta); saveCounter(); renderCounter(); }
+  function initCounter(){
+    buildCounterGrid(); renderCounter();
+    $("counterOpen").addEventListener("click", () => { renderCounter(); $("counterMode").hidden = false; });
+    $("counterClose").addEventListener("click", () => { $("counterMode").hidden = true; });
+    $("counterGrid").addEventListener("click", (e) => {
+      const minus = e.target.closest(".ky-minus");
+      if (minus){ bump(minus.dataset.minus, -1); return; }
+      const card = e.target.closest(".koyaku");
+      if (card) bump(card.dataset.key, +1);
+    });
+    $("counterGrid").addEventListener("keydown", (e) => {
+      if (e.key!=="Enter" && e.key!==" ") return;
+      const card = e.target.closest(".koyaku"); if (!card) return;
+      e.preventDefault(); bump(card.dataset.key, +1);
+    });
+    document.querySelector(".cg-controls").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-g]"); if (b) bumpGames(parseInt(b.dataset.g,10));
+    });
+    $("cgEdit").addEventListener("click", () => {
+      const v = prompt("総回転数を入力（台の値に合わせる）", counter.games);
+      if (v===null) return;
+      const n = parseInt(v,10);
+      if (!isNaN(n) && n>=0){ counter.games = n; saveCounter(); renderCounter(); }
+    });
+    $("counterReset").addEventListener("click", () => {
+      if (!confirm("小役カウントと総回転数をすべて 0 に戻しますか？")) return;
+      counter = { games:0, counts:{} }; saveCounter(); renderCounter(); toast("カウンターをリセットしました");
+    });
+    $("counterToLedger").addEventListener("click", () => {
+      if (counter.games>0) $("fGames").value = counter.games;
+      if (!$("fMemo").value.trim()){
+        const parts = KOYAKU.filter(k => (counter.counts[k.key]|0) > 0).map(k => `${k.label}:${counter.counts[k.key]}`);
+        if (parts.length) $("fMemo").value = "小役 " + parts.join(" / ");
+      }
+      $("counterMode").hidden = true;
+      $("recordForm").scrollIntoView({ behavior: reduceMotion?"auto":"smooth", block:"center" });
+      $("fDiff").focus({preventScroll:true});
+      toast("回転数を記入欄へ送りました");
+    });
+  }
+
   // ───────── 描画まとめ ─────────
   function renderAll(){ updateRangeUI(); updateSortUI(); setRegisterCollapsed(registerCollapsed); renderSummary(); renderCalendar(); renderTable(); renderChart(); firstPaint=false; }
 
   setAuthMode("login");
   syncQuickNav(true);
+  initCounter();
   boot();
 })();
 </script>
