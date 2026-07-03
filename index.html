@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>黄金郷の家計簿 — うみねこのなく頃に2 収支帳</title>
 <script>document.documentElement.classList.add("js");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
       radial-gradient(80% 60% at 0% 95%, rgba(90,20,30,.14), transparent 60%);
     background-attachment:fixed;
     color:var(--bone); font-family:var(--jp); font-weight:400; line-height:1.75;
-    min-height:100vh; -webkit-font-smoothing:antialiased;
+    min-height:100vh; min-height:100dvh; -webkit-font-smoothing:antialiased;
   }
   .fig { font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .plus{ color:var(--gold-lit); } .minus{ color:var(--truth-lit); }
@@ -43,7 +43,8 @@
   :focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
 
   /* ── ゲート（設定・認証） ── */
-  .gate { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:22px; }
+  .gate { min-height:100vh; min-height:100dvh; display:flex; align-items:center; justify-content:center;
+    padding:calc(22px + env(safe-area-inset-top)) calc(22px + env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) calc(22px + env(safe-area-inset-left)); }
   .gate-card {
     position:relative; width:100%; max-width:430px; background:var(--panel);
     border:1px solid var(--edge); padding:40px 30px 32px; overflow:hidden;
@@ -86,7 +87,7 @@
   .btn-quiet:hover { color:var(--gold-lit); border-color:var(--gold-deep); }
 
   /* ── 本体（スマホ優先の1カラム） ── */
-  .sheet { max-width:600px; margin:0 auto; padding:0 20px 90px; opacity:0; animation:sheetIn .6s ease forwards; }
+  .sheet { max-width:600px; margin:0 auto; padding:0 20px calc(90px + env(safe-area-inset-bottom)); opacity:0; animation:sheetIn .6s ease forwards; }
   @keyframes sheetIn { to { opacity:1; } }
 
   .userbar { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 0 4px; font-size:12.5px; color:var(--ash); flex-wrap:wrap; }
@@ -202,7 +203,7 @@
 
   footer { margin-top:56px; padding-top:20px; border-top:1px solid var(--edge-soft); text-align:center; font-family:var(--serif); font-style:italic; font-size:13px; color:var(--ash-dim); line-height:1.9; }
 
-  #toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--raise); color:var(--bone); font-family:var(--jp); font-size:13.5px; padding:12px 22px; border:1px solid var(--gold-deep); border-radius:2px; box-shadow:0 16px 40px -16px #000; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:99; max-width:88vw; }
+  #toast { position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px); background:var(--raise); color:var(--bone); font-family:var(--jp); font-size:13.5px; padding:12px 22px; border:1px solid var(--gold-deep); border-radius:2px; box-shadow:0 16px 40px -16px #000; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:99; max-width:88vw; }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   #toast.err { border-color:var(--truth); color:var(--truth-lit); }
 
@@ -263,8 +264,11 @@
     tbody td::before { content:attr(data-label); font-family:var(--jp); color:var(--ash); font-size:12px; letter-spacing:.04em; text-align:left; margin-right:12px; }
     tbody td:first-child { box-shadow:none; padding-left:15px; font-size:15px; color:var(--gold-lit); font-weight:600; background:var(--panel-2); }
     tbody td:first-child::before { content:"実戦日"; color:var(--gold-deep); }
-    tbody td.row-actions { justify-content:flex-end; }
+    tbody td.row-actions { justify-content:flex-end; gap:10px; padding:11px 15px 13px; }
     tbody td.row-actions::before { content:none; }
+    /* 指で押しやすい大きさに（Apple/Google推奨の44px級） */
+    .row-actions button { min-height:44px; padding:9px 18px; font-size:13px; margin-left:0; }
+    .cal-nav button { min-height:44px; }
     .cal-legend { font-size:12.5px; gap:12px; }
   }
 </style>
@@ -627,7 +631,13 @@
     clearMsg("authMsg");
     try {
       if (authMode === "register") {
-        const { data, error } = await sb.auth.signUp({ email, password: pass });
+        // 確認メールの戻り先を「今アプリを開いているURL」に固定する。
+        // これを渡さないと Supabase のダッシュボード既定（Site URL = localhost:3000）へ飛んでしまう。
+        // ※このURLは Supabase の Authentication → URL Configuration → Redirect URLs に登録が必要。
+        const opts = /^https?:$/.test(location.protocol)
+          ? { emailRedirectTo: location.origin + location.pathname }
+          : {};
+        const { data, error } = await sb.auth.signUp({ email, password: pass, options: opts });
         if (error) throw error;
         if (!data.session) {
           setMsg("authMsg", "確認メールを送信しました。メール内のリンクを開くとログインできます。", false);
