@@ -326,70 +326,6 @@
   [hidden] { display:none !important; }
   @media (prefers-reduced-motion:reduce){ .sheet{ animation:none; opacity:1; } }
 
-
-  /* ── PC / タブレット横向き最適化 ── */
-  @media (min-width:900px){
-    .sheet {
-      max-width:min(1180px, calc(100% - 64px));
-      display:grid;
-      grid-template-columns:minmax(0, 1.08fr) minmax(0, .92fr);
-      column-gap:28px;
-      row-gap:30px;
-      padding:0 0 calc(110px + env(safe-area-inset-bottom));
-    }
-    .userbar,
-    .masthead,
-    .truth,
-    .stats,
-    .migrate-note,
-    .register-section,
-    footer { grid-column:1 / -1; }
-    .masthead { padding:26px 0 16px; }
-    .masthead h1 { font-size:48px; }
-    .truth { margin:4px 0 0; padding:38px 32px 34px; }
-    .truth .circle { width:390px; height:390px; }
-    .truth .grand { font-size:86px; }
-    .stats { grid-template-columns:repeat(4, minmax(0, 1fr)); margin-bottom:2px; }
-    .stat { padding:18px 20px; }
-    .stat .v { font-size:24px; }
-    .section { margin-bottom:0; min-width:0; }
-    .calendar-section { grid-column:1 / 2; }
-    .chart-section { grid-column:2 / 3; }
-    .register-section { margin-top:2px; }
-    .chap { min-height:32px; }
-    .cal-cell { min-height:78px; padding:7px 8px 8px; }
-    .cal-cell .d { font-size:13px; }
-    .cal-cell .amt { font-size:13px; }
-    .cal-cell.today .d { width:23px; height:23px; }
-    .chart-frame { padding:18px 16px 12px; }
-    .chart-wrap { height:410px; }
-    .register-scroll { overflow-x:auto; }
-    table { font-size:14px; }
-    thead th { padding:13px 16px; }
-    tbody td { padding:12px 16px; }
-    tbody td:nth-child(7) {
-      min-width:220px;
-      max-width:360px;
-      white-space:normal;
-      line-height:1.65;
-    }
-    .row-actions { min-width:132px; }
-    .entry-dialog { width:min(760px, 92vw); max-height:min(88dvh,760px); padding:30px 32px 28px; }
-    .entry-grid { grid-template-columns:repeat(4, minmax(0, 1fr)); gap:17px 18px; }
-    .entry-grid .field:nth-child(1),
-    .entry-grid .field:nth-child(2),
-    .entry-grid .field:nth-child(3),
-    .entry-grid .field:nth-child(4) { grid-column:auto; }
-    .field.wide { grid-column:1 / -1; }
-    .fab { right:calc(30px + env(safe-area-inset-right)); bottom:calc(30px + env(safe-area-inset-bottom)); }
-  }
-
-  @media (min-width:1200px){
-    .sheet { max-width:1240px; grid-template-columns:minmax(0, 1.12fr) minmax(0, .88fr); }
-    .chart-wrap { height:430px; }
-    .cal-cell { min-height:84px; }
-  }
-
   /* ── スマホ最適化 ── */
   @media (max-width:560px){
     .sheet { padding:0 15px 80px; }
@@ -535,7 +471,7 @@
   </div>
 
   <!-- 暦 -->
-  <section class="section reveal calendar-section">
+  <section class="section reveal">
     <div class="chap"><span class="mark"></span><h2>暦</h2><span class="en">Calendar</span></div>
     <div class="cal-head">
       <div class="cal-title"><span class="fig" id="calYear"></span>年 <span id="calMonth"></span>月</div>
@@ -554,7 +490,7 @@
   </section>
 
   <!-- 図表 -->
-  <section class="section reveal chart-section">
+  <section class="section reveal">
     <div class="chap"><span class="mark"></span><h2>推移を読む</h2><span class="en">Charts</span></div>
     <div class="chart-tabs">
       <button data-chart="cumulative" class="active">累計差枚</button>
@@ -566,7 +502,7 @@
   </section>
 
   <!-- 台帳 -->
-  <section class="section reveal register-section">
+  <section class="section reveal">
     <div class="chap"><span class="mark"></span><h2>実戦台帳</h2><span class="en">Register</span></div>
     <div class="register-scroll">
       <table>

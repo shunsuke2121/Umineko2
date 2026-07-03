@@ -14,8 +14,13 @@ create table if not exists public.records (
   bita_hit   integer not null default 0,   -- ビタ成功
   setting    text default '',              -- 推測設定
   memo       text default '',              -- 覚書
+  photos     jsonb not null default '[]'::jsonb, -- 写真（圧縮画像dataURLの配列）
   created_at timestamptz not null default now()
 );
+
+-- 既にテーブルがある場合でも photos 列を追加（この1行だけでも移行できます）
+alter table public.records
+  add column if not exists photos jsonb not null default '[]'::jsonb;
 
 -- 自分の記録を日付順に引きやすくする索引
 create index if not exists records_user_date_idx
