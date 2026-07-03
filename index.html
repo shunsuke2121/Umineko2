@@ -172,6 +172,42 @@
   .btn-row { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
   #cancelEditBtn { display:none; }
 
+  /* ── 記帳ボトムシート（どこからでも1タップで開く） ── */
+  /* z-index scale: fab 80 < toast 99 < loading 200 < dialog(top-layer) */
+  .fab {
+    position:fixed; z-index:80;
+    right:calc(18px + env(safe-area-inset-right));
+    bottom:calc(20px + env(safe-area-inset-bottom));
+    display:inline-flex; align-items:center; gap:9px;
+    min-height:54px; padding:0 24px 0 20px;
+    background:linear-gradient(180deg, var(--gold-lit), var(--gold)); color:#241109;
+    border:1px solid var(--gold-lit); border-radius:999px; font-weight:700; letter-spacing:.06em; font-size:15px;
+    box-shadow:0 14px 34px -12px rgba(236,202,121,.55), 0 6px 16px -8px #000;
+  }
+  .fab .glyph { font-family:var(--serif); font-size:23px; line-height:0; font-weight:600; margin-top:-1px; }
+  .fab:hover { filter:brightness(1.06); }
+  .fab:active { transform:scale(.96); }
+
+  .entry-dialog {
+    position:fixed; margin:auto; inset:0; width:min(460px,92vw); max-height:min(90dvh,720px);
+    padding:26px 26px calc(24px + env(safe-area-inset-bottom));
+    background:var(--panel); color:var(--bone); border:1px solid var(--edge); border-radius:5px; overflow-y:auto;
+    box-shadow:0 40px 100px -34px #000, inset 0 1px 0 rgba(236,202,121,.06);
+  }
+  .entry-dialog::before { content:""; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent); }
+  .entry-dialog::backdrop { background:rgba(8,6,9,.68); }
+  .entry-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
+  .entry-head .chap { margin:0; }
+  .entry-close { flex:none; width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center;
+    background:transparent; border:1px solid var(--edge); color:var(--ash); font-size:16px; line-height:1; }
+  .entry-close:hover { border-color:var(--gold-deep); color:var(--gold-lit); }
+  .entry-dialog[open] { animation:dlgPop .3s cubic-bezier(.2,.7,.3,1); }
+  .entry-dialog[open]::backdrop { animation:dlgFade .3s ease; }
+  @keyframes dlgPop { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:none; } }
+  @keyframes dlgFade { from { opacity:0; } to { opacity:1; } }
+  @media (prefers-reduced-motion:reduce){ .entry-dialog[open], .entry-dialog[open]::backdrop { animation:none !important; } }
+
   /* 図表 */
   .chart-tabs { display:flex; gap:2px; margin-bottom:16px; flex-wrap:wrap; }
   .chart-tabs button { min-height:40px; padding:8px 12px; font-family:var(--jp); font-size:13px; background:transparent; border:1px solid var(--edge); border-radius:2px; color:var(--ash); }
@@ -264,6 +300,12 @@
     tbody td::before { content:attr(data-label); font-family:var(--jp); color:var(--ash); font-size:12px; letter-spacing:.04em; text-align:left; margin-right:12px; }
     tbody td:first-child { box-shadow:none; padding-left:15px; font-size:15px; color:var(--gold-lit); font-weight:600; background:var(--panel-2); }
     tbody td:first-child::before { content:"実戦日"; color:var(--gold-deep); }
+    /* 記帳フォームを下からのボトムシートに */
+    .entry-dialog { width:100%; max-width:100%; margin:0; inset:auto 0 0 0; max-height:92dvh;
+      border-radius:16px 16px 0 0; border-bottom:none; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); }
+    .entry-dialog[open] { animation:sheetUp .32s cubic-bezier(.2,.7,.3,1); }
+    @keyframes sheetUp { from { opacity:.5; transform:translateY(100%); } to { opacity:1; transform:none; } }
+    .fab { right:calc(16px + env(safe-area-inset-right)); bottom:calc(16px + env(safe-area-inset-bottom)); }
     tbody td.row-actions { justify-content:flex-end; gap:10px; padding:11px 15px 13px; }
     tbody td.row-actions::before { content:none; }
     /* 指で押しやすい大きさに（Apple/Google推奨の44px級） */
@@ -399,32 +441,6 @@
     </div>
   </section>
 
-  <!-- 記入 -->
-  <section class="section reveal">
-    <div class="chap"><span class="mark"></span><h2 id="formTitle">実戦を記入する</h2><span class="en">Entry</span></div>
-    <form id="recordForm">
-      <div class="entry-grid">
-        <div class="field"><label>日付</label><input type="date" id="fDate" required></div>
-        <div class="field"><label>差枚（負は −）</label><input type="number" id="fDiff" step="1" inputmode="numeric" placeholder="+1500 / -800" required></div>
-        <div class="field"><label>回転数 G</label><input type="number" id="fGames" min="0" step="1" inputmode="numeric" placeholder="4500"></div>
-        <div class="field"><label>推測設定</label>
-          <select id="fSetting">
-            <option value="">不明</option>
-            <option value="1">設定1</option><option value="2">設定2</option><option value="3">設定3</option>
-            <option value="4">設定4</option><option value="5">設定5</option><option value="6">設定6</option>
-          </select>
-        </div>
-        <div class="field"><label>ビタ試行</label><input type="number" id="fBitaTry" min="0" step="1" inputmode="numeric" placeholder="20"></div>
-        <div class="field"><label>ビタ成功</label><input type="number" id="fBitaHit" min="0" step="1" inputmode="numeric" placeholder="17"></div>
-        <div class="field wide"><label>覚書（店・台番・展開）</label><input type="text" id="fMemo" placeholder="○○ホール 138番台 / 黄金の夜明けまで到達"></div>
-      </div>
-      <div class="btn-row">
-        <button type="submit" class="btn-primary" id="submitBtn">帳簿に記す</button>
-        <button type="button" class="btn-ghost" id="cancelEditBtn">取り消す</button>
-      </div>
-    </form>
-  </section>
-
   <!-- 図表 -->
   <section class="section reveal">
     <div class="chap"><span class="mark"></span><h2>推移を読む</h2><span class="en">Charts</span></div>
@@ -457,6 +473,40 @@
 
   <footer id="footNote">クラウドに保管中。どの端末からでも同じ帳簿を開けます。</footer>
 </main>
+
+<!-- どこからでも1タップで開く記帳ボタン -->
+<button type="button" class="fab" id="fabAdd" aria-haspopup="dialog" aria-label="実戦を記帳する" hidden>
+  <span class="glyph" aria-hidden="true">✒</span>記帳
+</button>
+
+<!-- 記帳フォーム（ボトムシート） -->
+<dialog class="entry-dialog" id="entryDialog" aria-labelledby="formTitle">
+  <div class="entry-head">
+    <div class="chap"><span class="mark"></span><h2 id="formTitle">実戦を記入する</h2><span class="en">Entry</span></div>
+    <button type="button" class="entry-close" id="entryClose" aria-label="閉じる">✕</button>
+  </div>
+  <form id="recordForm">
+    <div class="entry-grid">
+      <div class="field"><label>日付</label><input type="date" id="fDate" required></div>
+      <div class="field"><label>差枚（負は −）</label><input type="number" id="fDiff" step="1" inputmode="numeric" placeholder="+1500 / -800" required></div>
+      <div class="field"><label>回転数 G</label><input type="number" id="fGames" min="0" step="1" inputmode="numeric" placeholder="4500"></div>
+      <div class="field"><label>推測設定</label>
+        <select id="fSetting">
+          <option value="">不明</option>
+          <option value="1">設定1</option><option value="2">設定2</option><option value="3">設定3</option>
+          <option value="4">設定4</option><option value="5">設定5</option><option value="6">設定6</option>
+        </select>
+      </div>
+      <div class="field"><label>ビタ試行</label><input type="number" id="fBitaTry" min="0" step="1" inputmode="numeric" placeholder="20"></div>
+      <div class="field"><label>ビタ成功</label><input type="number" id="fBitaHit" min="0" step="1" inputmode="numeric" placeholder="17"></div>
+      <div class="field wide"><label>覚書（店・台番・展開）</label><input type="text" id="fMemo" placeholder="○○ホール 138番台 / 黄金の夜明けまで到達"></div>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn-primary" id="submitBtn">帳簿に記す</button>
+      <button type="button" class="btn-ghost" id="cancelEditBtn">取り消す</button>
+    </div>
+  </form>
+</dialog>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -548,7 +598,7 @@
 
   // ───────── ブート ─────────
   function getCfg(){ return { url: HARD_URL || localStorage.getItem(CFG_URL) || "", key: HARD_KEY || localStorage.getItem(CFG_KEY) || "" }; }
-  function show(which){ for (const id of ["setupGate","authGate","app"]) $(id).hidden = (id !== which); if (which === "app") playReveal(); }
+  function show(which){ for (const id of ["setupGate","authGate","app"]) $(id).hidden = (id !== which); $("fabAdd").hidden = (which !== "app"); if (which === "app") playReveal(); }
   function playReveal(){
     if (reduceMotion) return;
     const app = $("app");
@@ -768,7 +818,7 @@
       else cell.setAttribute("aria-label", `${calMonth+1}月${day}日`);
       cell.innerHTML = `<span class="d">${day}</span>` +
         (rec ? `<span class="cnt">${rec.count>1?rec.count+"件":""}</span><span class="amt">${fmtSigned(rec.diff)}</span>` : "");
-      const pick = () => { $("fDate").value = iso; exitEdit(); toast(shortDate(iso)+" で記入します"); $("recordForm").scrollIntoView({ behavior: reduceMotion?"auto":"smooth", block:"center" }); $("fDiff").focus({preventScroll:true}); };
+      const pick = () => { openEntry(iso); toast(shortDate(iso)+" で記入します"); };
       cell.addEventListener("click", pick);
       cell.addEventListener("keydown", e => { if (e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(); } });
       grid.appendChild(cell);
@@ -838,6 +888,25 @@
 
   // ───────── 記入・編集 ─────────
   $("fDate").value = localToday();
+
+  // 記帳ボトムシートの開閉
+  const entryDialog = $("entryDialog");
+  function resetEntry(){ exitEdit(); $("recordForm").reset(); $("fDate").value = localToday(); }
+  function openEntry(dateISO){
+    resetEntry();
+    $("fDate").value = dateISO || localToday();
+    if (!entryDialog.open) entryDialog.showModal();
+    requestAnimationFrame(() => { try { $("fDiff").focus({ preventScroll:true }); } catch {} });
+  }
+  // close イベントに依存せず、閉じる各経路で明示的に状態を戻す（一部環境で close が発火しないため）
+  function closeEntry(){ if (entryDialog.open) entryDialog.close(); resetEntry(); }
+  $("fabAdd").addEventListener("click", () => openEntry());
+  $("entryClose").addEventListener("click", closeEntry);
+  // 背景タップで閉じる（ボトムシートの外側）
+  entryDialog.addEventListener("click", (e) => { if (e.target === entryDialog) closeEntry(); });
+  // ESC で閉じたときも状態を戻す（開き直しでも openEntry/enterEdit が必ず再設定する）
+  entryDialog.addEventListener("cancel", () => resetEntry());
+
   $("recordForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const bitaTry = parseInt($("fBitaTry").value)||0;
@@ -849,7 +918,7 @@
       if (editId !== null){ await store.update(editId, rec); toast("書き改めました"); exitEdit(); }
       else { await store.add(rec); toast("帳簿に記しました"); }
       firstPaint = false; renderAll();
-      $("recordForm").reset(); $("fDate").value = localToday();
+      closeEntry(); // 保存したら閉じる（close イベントでフォームをリセット）
     } catch (err){ toast("保存失敗: " + err.message, true); }
     finally { btn.disabled = false; }
   });
@@ -861,10 +930,11 @@
     $("fBitaTry").value=r.bitaTry||""; $("fBitaHit").value=r.bitaHit||"";
     $("fSetting").value=r.setting||""; $("fMemo").value=r.memo||"";
     $("formTitle").textContent="記録を直す"; $("submitBtn").textContent="書き改める"; $("cancelEditBtn").style.display="inline-block";
-    $("recordForm").scrollIntoView({ behavior: reduceMotion?"auto":"smooth", block:"center" });
+    if (!entryDialog.open) entryDialog.showModal(); // 値を入れた後に開く（reset しない）
+    requestAnimationFrame(() => { try { $("fDiff").focus({ preventScroll:true }); } catch {} });
   }
   function exitEdit(){ editId=null; $("formTitle").textContent="実戦を記入する"; $("submitBtn").textContent="帳簿に記す"; $("cancelEditBtn").style.display="none"; }
-  $("cancelEditBtn").addEventListener("click", () => { exitEdit(); $("recordForm").reset(); $("fDate").value=localToday(); });
+  $("cancelEditBtn").addEventListener("click", closeEntry);
 
   $("historyBody").addEventListener("click", async (e) => {
     const b = e.target.closest("button"); if(!b) return;
