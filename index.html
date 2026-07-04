@@ -270,7 +270,7 @@
   .cal-cell.has-photo::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
     background:linear-gradient(180deg, rgba(13,10,13,.68), rgba(13,10,13,.12) 46%, rgba(13,10,13,.82)); }
   .cal-cell .d, .cal-cell .amt, .cal-cell .cnt, .cal-cell .cal-cam { position:relative; z-index:2; }
-  .cal-cell.has-photo .d, .cal-cell.has-photo .amt { color:var(--bone); text-shadow:0 1px 3px #000; }
+  .cal-cell.has-photo .d, .cal-cell.has-photo .amt, .cal-cell.has-photo .cnt { position:relative; z-index:2; color:var(--bone); text-shadow:0 1px 3px #000; }
   .cal-cell.has-photo.lose .amt { color:var(--truth-lit); } .cal-cell.has-photo.win .amt { color:var(--gold-lit); }
   .cal-cam { position:absolute; left:6px; bottom:6px; font-size:9px; color:var(--bone); filter:drop-shadow(0 1px 2px #000); letter-spacing:.02em; }
   .cal-legend { margin-top:12px; font-family:var(--serif); font-style:italic; font-size:13.5px; color:var(--ash); display:flex; gap:18px; flex-wrap:wrap; }
@@ -1357,9 +1357,11 @@
       cell.setAttribute("role","button"); cell.tabIndex = 0;
       if (iso === today) cell.classList.add("today");
       const rec = map.get(iso);
-      if (rec){ cell.classList.add(rec.diff>=0 ? "win":"lose"); cell.setAttribute("aria-label", `${calMonth+1}月${day}日 差枚${fmtSigned(rec.diff)}`); }
+      if (rec){ cell.classList.add(rec.diff>=0 ? "win":"lose"); if (rec.firstPhoto) cell.classList.add("has-photo"); cell.setAttribute("aria-label", `${calMonth+1}月${day}日 差枚${fmtSigned(rec.diff)}${rec.photoCount?` 写真${rec.photoCount}枚`:""}`); }
       else cell.setAttribute("aria-label", `${calMonth+1}月${day}日`);
-      cell.innerHTML = `<span class="d">${day}</span>` +
+      cell.innerHTML =
+        (rec && rec.firstPhoto ? `<img class="cal-photo" src="${rec.firstPhoto}" alt="" loading="lazy">` : "") +
+        `<span class="d">${day}</span>` +
         (rec ? `<span class="cnt">${rec.count>1?rec.count+"件":""}</span><span class="amt">${fmtSigned(rec.diff)}</span>` : "");
       const pick = () => { openEntry(iso); toast(shortDate(iso)+" で記入します"); };
       cell.addEventListener("click", pick);
@@ -1405,6 +1407,21 @@
       scales, plugins:{ legend:{display:false},
         tooltip:{ backgroundColor:"#20141b", borderColor:C.gold, borderWidth:1, titleColor:C.goldLit, bodyColor:C.ink, padding:10, cornerRadius:2, displayColors:false, titleFont:{family:'"Shippori Mincho",serif'}, callbacks:{ label:c=>tip(c.parsed.y) } } } };
   }
+  // 棒グラフの直接値ラベル（少数データ時。ui-ux-pro-max: bar は既定で値ラベル）
+  const barLabels = {
+    id:"barLabels",
+    afterDatasetsDraw(ch){
+      const ds = ch.data.datasets[0]; if (!ds || ds.data.length > 16) return;
+      const ctx = ch.ctx, meta = ch.getDatasetMeta(0);
+      ctx.save(); ctx.font = '10px "DM Mono", monospace'; ctx.textAlign = "center";
+      meta.data.forEach((bar, i) => {
+        const v = ds.data[i]; if (v == null) return;
+        ctx.fillStyle = v >= 0 ? "#ecca79" : "#ff5b64";
+        ctx.fillText(fmtSigned(v), bar.x, v >= 0 ? bar.y - 4 : bar.y + 13);
+      });
+      ctx.restore();
+    }
+  };
   function renderChart(){
     if (!window.Chart) return;
     const days = [...byDate().values()];
@@ -1420,7 +1437,7 @@
       let cum=0; const data=days.map(d=>(cum+=d.diff));
       chart=new Chart(ctx,{type:"line",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data,borderColor:C.goldLit,backgroundColor:"rgba(236,202,121,.10)",fill:true,tension:.18,borderWidth:2,pointBackgroundColor:C.gold,...lineDots(days.length)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
     } else if (currentChart==="daily"){
-      chart=new Chart(ctx,{type:"bar",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data:days.map(d=>d.diff),backgroundColor:days.map(d=>d.diff>=0?C.goldLit:C.truth),categoryPercentage:1,barPercentage:days.length>120?1:.9}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"bar",data:{labels:days.map(d=>shortDate(d.date)),datasets:[{data:days.map(d=>d.diff),backgroundColor:days.map(d=>d.diff>=0?C.goldLit:C.truth),categoryPercentage:1,barPercentage:days.length>120?1:.9}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚"),plugins:[barLabels]});
     } else if (currentChart==="bita"){
       const wb=days.filter(d=>d.bitaTry>0);
       const bitaBase = { x:{grid:{color:C.grid}, ticks:{autoSkip:true, maxTicksLimit:wb.length > 240 ? 10 : 12, maxRotation:55}}, y:{grid:{color:C.grid},min:0,max:100} };
@@ -1428,8 +1445,17 @@
     } else {
       const m=new Map(); for(const d of days){const k=d.date.slice(0,7); m.set(k,(m.get(k)||0)+d.diff);}
       const keys=[...m.keys()].sort();
-      chart=new Chart(ctx,{type:"bar",data:{labels:keys.map(k=>k.replace("-","/")),datasets:[{data:keys.map(k=>m.get(k)),backgroundColor:keys.map(k=>m.get(k)>=0?C.goldLit:C.truth)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚")});
+      chart=new Chart(ctx,{type:"bar",data:{labels:keys.map(k=>k.replace("-","/")),datasets:[{data:keys.map(k=>m.get(k)),backgroundColor:keys.map(k=>m.get(k)>=0?C.goldLit:C.truth)}]},options:chartOpts(base,v=>fmtSigned(v)+" 枚"),plugins:[barLabels]});
     }
+    // スクリーンリーダー向け要約（ui-ux-pro-max: screen-reader-summary）
+    const total = days.reduce((s,d)=>s+d.diff,0);
+    const wb = days.filter(d=>d.bitaTry>0);
+    const summary =
+      currentChart==="cumulative" ? `累計差枚の推移。${days.length}日間、最新の累計 ${fmtSigned(total)}枚。` :
+      currentChart==="daily"      ? `日別差枚の棒グラフ。${days.length}日分。` :
+      currentChart==="bita"       ? `ビタ成功率の推移。${wb.length}日分。` :
+                                    `月別収支の棒グラフ。`;
+    const cv = $("mainChart"); cv.setAttribute("role","img"); cv.setAttribute("aria-label", summary);
   }
 
   // ───────── 記入・編集 ─────────
@@ -1513,7 +1539,7 @@
     const bitaTry = parseInt($("fBitaTry").value)||0;
     const bitaHit = parseInt($("fBitaHit").value)||0;
     if (bitaHit>bitaTry){ toast("ビタ成功がビタ試行を超えています。", true); return; }
-    const rec = { date:$("fDate").value, diff:parseInt($("fDiff").value)||0, games:parseInt($("fGames").value)||0, bitaTry, bitaHit, setting:$("fSetting").value, memo:$("fMemo").value.trim() };
+    const rec = { date:$("fDate").value, diff:parseInt($("fDiff").value)||0, games:parseInt($("fGames").value)||0, bitaTry, bitaHit, setting:$("fSetting").value, memo:$("fMemo").value.trim(), photos:entryPhotos.slice() };
     const btn = $("submitBtn"); btn.disabled = true;
     try {
       if (editId !== null){ await store.update(editId, rec); toast("書き改めました"); exitEdit(); }
@@ -1530,6 +1556,7 @@
     $("fDate").value=r.date; $("fDiff").value=r.diff; $("fGames").value=r.games||"";
     $("fBitaTry").value=r.bitaTry||""; $("fBitaHit").value=r.bitaHit||"";
     $("fSetting").value=r.setting||""; $("fMemo").value=r.memo||"";
+    entryPhotos = Array.isArray(r.photos) ? r.photos.slice() : []; renderEntryPhotos();
     $("formTitle").textContent="記録を直す"; $("submitBtn").textContent="書き改める"; $("cancelEditBtn").style.display="inline-block";
     if (!entryDialog.open) entryDialog.showModal(); // 値を入れた後に開く（reset しない）
     requestAnimationFrame(() => { try { $("fDiff").focus({ preventScroll:true }); } catch {} });
